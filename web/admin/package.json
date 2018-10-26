@@ -1,0 +1,35 @@
+{
+  "name": "admin",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": ".",
+  "license": "apache-2.0",
+  "dependencies": {
+    "@doubledutch/admin-client": "^2.0.1",
+    "@doubledutch/firebase-connector": "^4.0.1",
+    "react": "^16.5.1",
+    "react-dom": "^16.5.1",
+    "react-scripts": "1.0.14"
+  },
+  "devDependencies": {
+    "babel-eslint": "^9.0.0",
+    "eslint": "^4.4.1",
+    "eslint-config-airbnb": "^15.0.1",
+    "eslint-config-prettier": "^2.3.0",
+    "eslint-import-resolver-node": "^0.3.1",
+    "eslint-loader": "^1.8.0",
+    "eslint-plugin-css-modules": "^2.7.1",
+    "eslint-plugin-flowtype": "^2.34.1",
+    "eslint-plugin-import": "^2.6.1",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-prettier": "^2.1.2",
+    "eslint-plugin-react": "^7.0.1",
+    "prettier": "^1.14.3"
+  },
+  "scripts": {
+    "start": "node emulator",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
