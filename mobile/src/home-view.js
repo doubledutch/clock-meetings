@@ -124,7 +124,7 @@ class HomeView extends PureComponent {
       const number = index || slotCount
       const meetingUserId = meetings[index]
       const user = meetingUserId
-        ? { id: meetingUserId }
+        ? this.getCachedUser(meetingUserId)
         : {
             firstName: number > 9 ? `${Math.floor(number / 10)}` : '',
             lastName: `${number % 10}`,
