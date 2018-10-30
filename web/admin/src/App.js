@@ -18,59 +18,42 @@ import React, { PureComponent } from 'react'
 
 import client from '@doubledutch/admin-client'
 import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
+import '@doubledutch/react-components/lib/base.css'
 
 import './App.css'
 
 class App extends PureComponent {
-  constructor(props) {
-    super(props)
-
-    this.state = { sharedTasks: [] }
-  }
+  state = { slotCount: 12 }
 
   componentDidMount() {
     const { fbc } = this.props
     fbc.signinAdmin().then(() => {
-      const sharedRef = fbc.database.public.allRef('tasks')
-      sharedRef.on('child_added', data => {
-        this.setState({
-          sharedTasks: [...this.state.sharedTasks, { ...data.val(), key: data.key }],
-        })
-      })
-      sharedRef.on('child_removed', data => {
-        this.setState({ sharedTasks: this.state.sharedTasks.filter(x => x.key !== data.key) })
-      })
+      fbc.database.public
+        .adminRef('slotCount')
+        .on('value', data => this.setState({ slotCount: data.val() || 12 }))
     })
   }
 
   render() {
+    const { slotCount } = this.state
     return (
       <div className="App">
-        <p className="App-intro">
-          This is a sample admin page. Developers should replace this page, or remove the{' '}
-          <code>web/admin</code> folder entirely
-        </p>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-        <h3>Public tasks:</h3>
-        <ul>
-          {this.state.sharedTasks.map(task => {
-            const { image, firstName, lastName } = task.creator
-            return (
-              <li key={task.key}>
-                <img className="avatar" src={image} alt="" />
-                <span>
-                  {' '}
-                  {firstName} {lastName} - {task.text} -{' '}
-                </span>
-                <button onClick={() => this.markComplete(task)}>Mark complete</button>
-              </li>
-            )
-          })}
-        </ul>
+        <label>
+          Number of slots:{' '}
+          <input
+            type="number"
+            min={3}
+            max={12}
+            value={slotCount}
+            onChange={this.updatePublicNumber('slotCount')}
+          />
+        </label>
       </div>
     )
+  }
+
+  updatePublicNumber = prop => e => {
+    this.props.fbc.database.public.adminRef(prop).set(+e.target.value)
   }
 
   markComplete(task) {
