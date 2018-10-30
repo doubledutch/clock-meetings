@@ -18,6 +18,7 @@ import React, { PureComponent } from 'react'
 
 import client from '@doubledutch/admin-client'
 import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
+import { TextInput } from '@doubledutch/react-components'
 import '@doubledutch/react-components/lib/base.css'
 
 import './App.css'
@@ -34,14 +35,17 @@ class App extends PureComponent {
       fbc.database.public
         .adminRef('currentSlotIndex')
         .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
+      fbc.database.public
+        .adminRef('topics')
+        .on('value', data => this.setState({ topics: data.val() || '' }))
     })
   }
 
   render() {
-    const { currentSlotIndex, slotCount } = this.state
+    const { currentSlotIndex, slotCount, topics } = this.state
     if (currentSlotIndex === null) return <div>Loading...</div>
     return (
-      <div className="App">
+      <div className="vertical space-children">
         <label>
           Number of slots:
           <input
@@ -75,6 +79,12 @@ class App extends PureComponent {
             </button>
           </div>
         )}
+        <TextInput
+          multiline
+          label="Enter ordered slot topics, one per line"
+          onChange={this.updateTopics}
+          value={topics}
+        />
         <div className="footer">
           <button className="dd-bordered destructive" onClick={this.clear}>
             Clear all meetings!
@@ -86,6 +96,10 @@ class App extends PureComponent {
 
   updatePublicNumber = prop => e => {
     this.props.fbc.database.public.adminRef(prop).set(+e.target.value)
+  }
+
+  updateTopics = e => {
+    this.props.fbc.database.public.adminRef('topics').set(e.target.value)
   }
 
   startOneOClock = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(1)

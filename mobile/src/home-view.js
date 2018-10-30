@@ -68,6 +68,9 @@ class HomeView extends PureComponent {
           .adminRef('slotCount')
           .on('value', data => this.setState({ slotCount: data.val() || 12 }))
         fbc.database.public
+          .adminRef('topics')
+          .on('value', data => this.setState({ topics: [null, ...(data.val() || '').split('\n')] }))
+        fbc.database.public
           .adminRef('currentSlotIndex')
           .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
         meetingsRef.on('child_added', data => {
@@ -97,7 +100,7 @@ class HomeView extends PureComponent {
   }
 
   render() {
-    const { currentSlotIndex, currentUser, meetings, selectedIndex, slotCount } = this.state
+    const { currentSlotIndex, currentUser, meetings, selectedIndex, slotCount, topics } = this.state
     if (!currentUser || !slotCount) return <Text>Loading...</Text>
     const windowWidth = Dimensions.get('window').width
     const width = windowWidth - clockPadding * 2 - avatarSize
@@ -188,7 +191,9 @@ class HomeView extends PureComponent {
           {currentSlotIndex > -1 ? (
             otherUser ? (
               <View style={s.info}>
-                <Text style={s.infoTitle}>Current meeting:</Text>
+                <Text style={s.infoTitle}>
+                  Current meeting: {topics[currentSlotIndex % slotCount]}
+                </Text>
                 <Text style={s.name}>
                   {otherUser.firstName} {otherUser.lastName}
                 </Text>
