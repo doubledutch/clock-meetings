@@ -48,7 +48,7 @@ class HomeView extends PureComponent {
           if (meeting.a === currentUser.id || meeting.b === currentUser.id) {
             const otherId = meeting.a === currentUser.id ? meeting.b : meeting.a
             this.setState(({ meetings }) => ({
-              meetings: { ...meetings, [meeting.slotIndex]: { otherId } },
+              meetings: { ...meetings, [meeting.slotIndex]: otherId },
             }))
           }
         })
@@ -66,7 +66,7 @@ class HomeView extends PureComponent {
   }
 
   render() {
-    const { selectedIndex, slotCount } = this.state
+    const { meetings, selectedIndex, slotCount } = this.state
     if (!this.state.currentUser || !slotCount) return null
     const width = Dimensions.get('window').width - clockPadding * 2 - avatarSize
 
@@ -78,16 +78,21 @@ class HomeView extends PureComponent {
       }
 
       const number = index || slotCount
+      const meetingUserId = meetings[index]
+      const user = meetingUserId
+        ? { id: meetingUserId }
+        : {
+            firstName: number > 9 ? `${Math.floor(number / 10)}` : '',
+            lastName: `${number % 10}`,
+          }
       return (
         <View style={selectedIndex === index ? s.selected : null} key={index}>
-          <TouchableOpacity style={[s.slot, position]} onPress={() => this.onPressSlot(index)}>
-            <Avatar
-              size={avatarSize}
-              user={{
-                firstName: number > 9 ? `${Math.floor(number / 10)}` : '',
-                lastName: `${number % 10}`,
-              }}
-            />
+          <TouchableOpacity
+            style={[s.slot, position]}
+            onPress={() => this.onPressSlot(index)}
+            disabled={!!meetingUserId}
+          >
+            <Avatar size={avatarSize} user={user} client={client} />
           </TouchableOpacity>
         </View>
       )
