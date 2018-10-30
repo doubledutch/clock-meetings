@@ -23,7 +23,7 @@ import '@doubledutch/react-components/lib/base.css'
 import './App.css'
 
 class App extends PureComponent {
-  state = { slotCount: 12 }
+  state = { slotCount: 12, currentSlotIndex: null }
 
   componentDidMount() {
     const { fbc } = this.props
@@ -31,16 +31,21 @@ class App extends PureComponent {
       fbc.database.public
         .adminRef('slotCount')
         .on('value', data => this.setState({ slotCount: data.val() || 12 }))
+      fbc.database.public
+        .adminRef('currentSlotIndex')
+        .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
     })
   }
 
   render() {
-    const { slotCount } = this.state
+    const { currentSlotIndex, slotCount } = this.state
+    if (currentSlotIndex === null) return <div>Loading...</div>
     return (
       <div className="App">
         <label>
-          Number of slots:{' '}
+          Number of slots:
           <input
+            className="number"
             type="number"
             min={3}
             max={12}
@@ -48,6 +53,33 @@ class App extends PureComponent {
             onChange={this.updatePublicNumber('slotCount')}
           />
         </label>
+        {currentSlotIndex < 0 ? (
+          <button className="dd-bordered" onClick={this.startOneOClock}>
+            Start the &quot;1 o&apos;clock&quot; meeting
+          </button>
+        ) : (
+          <div>
+            <label>
+              Current &quot;o&apos;clock&quot; time:
+              <input
+                className="number"
+                type="number"
+                min={1}
+                max={slotCount}
+                value={currentSlotIndex}
+                onChange={this.updatePublicNumber('currentSlotIndex')}
+              />
+            </label>
+            <button className="dd-bordered secondary" onClick={this.endMeetings}>
+              Turn off current meeting
+            </button>
+          </div>
+        )}
+        <div className="footer">
+          <button className="dd-bordered destructive" onClick={this.clear}>
+            Clear all meetings!
+          </button>
+        </div>
       </div>
     )
   }
@@ -56,11 +88,17 @@ class App extends PureComponent {
     this.props.fbc.database.public.adminRef(prop).set(+e.target.value)
   }
 
-  markComplete(task) {
-    this.props.fbc.database.public
-      .allRef('tasks')
-      .child(task.key)
-      .remove()
+  startOneOClock = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(1)
+  endMeetings = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(-1)
+
+  clear = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to clear ALL attendees' meetings? This cannot be undone!",
+      )
+    ) {
+      this.props.fbc.database.public.allRef('meetings').remove()
+    }
   }
 }
 
