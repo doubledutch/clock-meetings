@@ -97,7 +97,14 @@ class HomeView extends PureComponent {
   }
 
   render() {
-    const { currentSlotIndex, currentUser, meetings, selectedIndex, slotCount } = this.state
+    const {
+      currentSlotIndex,
+      currentUser,
+      meetings,
+      selectedIndex,
+      showMeetingSlotDetails,
+      slotCount,
+    } = this.state
     if (!currentUser || !slotCount) return <Text>Loading...</Text>
     const windowWidth = Dimensions.get('window').width
     const width = windowWidth - clockPadding * 2 - avatarSize
@@ -134,11 +141,7 @@ class HomeView extends PureComponent {
           style={selectedIndex === index || currentSlotIndex === index ? s.selected : null}
           key={index}
         >
-          <TouchableOpacity
-            style={[s.slot, position]}
-            onPress={() => this.onPressSlot(index)}
-            disabled={!!meetingUserId}
-          >
+          <TouchableOpacity style={[s.slot, position]} onPress={() => this.onPressSlot(index)}>
             <Avatar size={avatarSize} user={user} client={client} />
           </TouchableOpacity>
         </View>
@@ -148,6 +151,8 @@ class HomeView extends PureComponent {
     const isScanning = selectedIndex != null
     const currentMeeting = currentSlotIndex > -1 ? meetings[currentSlotIndex % slotCount] : null
     const otherUser = currentMeeting ? this.getCachedUser(currentMeeting) : null
+    const showMeetingSlotUser =
+      showMeetingSlotDetails == null ? null : this.getCachedUser(meetings[showMeetingSlotDetails])
 
     return (
       <View style={s.container}>
@@ -189,7 +194,16 @@ class HomeView extends PureComponent {
               <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
             )}
           </View>
-          {currentSlotIndex > -1 ? (
+          {showMeetingSlotDetails ? (
+            <View style={s.info}>
+              <Text style={s.infoTitle}>Meeting {showMeetingSlotDetails || slotCount}:</Text>
+              <Text style={s.name}>
+                {showMeetingSlotUser.firstName} {showMeetingSlotUser.lastName}
+              </Text>
+              <Text style={s.title}>{showMeetingSlotUser.title}</Text>
+              <Text style={s.title}>{showMeetingSlotUser.company}</Text>
+            </View>
+          ) : currentSlotIndex > -1 ? (
             otherUser ? (
               <View style={s.info}>
                 <Text style={s.infoTitle}>Current meeting:</Text>
@@ -239,10 +253,18 @@ class HomeView extends PureComponent {
 
   onPressSlot = index => {
     const { meetings } = this.state
-    if (!meetings[index]) {
+    if (meetings[index]) {
+      this.flashMeeting(index)
+    } else {
       this.setState({ selectedIndex: index })
     }
   }
+
+  flashMeeting = index => {
+    this.setState({ showMeetingSlotDetails: index })
+    setTimeout(() => this.setState({ showMeetingSlotDetails: null }), 8000)
+  }
+
   cancelSlotPress = () => this.setState({ selectedIndex: null })
 
   persistCachedUsers = debounce(() => setAsyncStorageValue(cachedUsersKey, this.cachedUsers), 5000)
