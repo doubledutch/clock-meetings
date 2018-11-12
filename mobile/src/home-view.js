@@ -60,6 +60,7 @@ class HomeView extends PureComponent {
 
   componentDidMount() {
     const { fbc } = this.props
+    client.getPrimaryColor().then(primaryColor => this.setState({ primaryColor }))
     client.getCurrentUser().then(currentUser => {
       this.setState({ currentUser })
       this.signin.then(() => {
@@ -100,8 +101,16 @@ class HomeView extends PureComponent {
   }
 
   render() {
-    const { currentSlotIndex, currentUser, meetings, selectedIndex, slotCount, topics } = this.state
-    if (!currentUser || !slotCount) return <Text>Loading...</Text>
+    const {
+      currentSlotIndex,
+      currentUser,
+      meetings,
+      primaryColor,
+      selectedIndex,
+      slotCount,
+      topics,
+    } = this.state
+    if (!currentUser || !primaryColor || !slotCount) return <Text>Loading...</Text>
     const windowWidth = Dimensions.get('window').width
     const width = windowWidth - clockPadding * 2 - avatarSize
     const scanWidth = Math.floor((width - avatarSize) / Math.sqrt(2))
@@ -133,12 +142,14 @@ class HomeView extends PureComponent {
             lastName: `${number % 10}`,
           }
       return (
-        <View
-          style={selectedIndex === index || currentSlotIndex === index ? s.selected : null}
-          key={index}
-        >
+        <View style={currentSlotIndex === index ? s.selected : null} key={index}>
           <TouchableOpacity style={[s.slot, position]} onPress={() => this.onPressSlot(index)}>
-            <Avatar size={avatarSize} user={user} client={client} />
+            <Avatar
+              size={avatarSize}
+              user={user}
+              client={client}
+              backgroundColor={selectedIndex === index ? primaryColor : null}
+            />
           </TouchableOpacity>
         </View>
       )
@@ -150,7 +161,7 @@ class HomeView extends PureComponent {
 
     return (
       <View style={s.container}>
-        <TitleBar title="Quick Chats" client={client} signin={this.signin} />
+        <TitleBar title="MagicHour" client={client} signin={this.signin} />
         <View style={s.main}>
           <View style={[s.clock, { height: width }]}>
             {[...Array(slotCount).keys()].map(renderSlot)}
@@ -192,7 +203,7 @@ class HomeView extends PureComponent {
             otherUser ? (
               <View style={s.info}>
                 <Text style={s.infoTitle}>
-                  Current meeting: {topics[currentSlotIndex % slotCount]}
+                  Current meeting: {topics[currentSlotIndex % slotCount || slotCount]}
                 </Text>
                 <Text style={s.name}>
                   {otherUser.firstName} {otherUser.lastName}
@@ -241,6 +252,7 @@ class HomeView extends PureComponent {
   onPressSlot = index => {
     const { meetings } = this.state
     if (meetings[index]) {
+      this.setState({ selectedIndex: null })
       client.openURL(`dd://profile/${meetings[index]}`)
     } else {
       this.setState({ selectedIndex: index })
