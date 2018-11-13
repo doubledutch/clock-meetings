@@ -16,6 +16,7 @@
 
 import React, { PureComponent } from 'react'
 import {
+  Alert,
   AsyncStorage,
   Button,
   Dimensions,
@@ -235,11 +236,15 @@ class HomeView extends PureComponent {
   }
 
   onScan = code => {
-    const { selectedIndex, currentUser } = this.state
+    const { selectedIndex, currentUser, meetings } = this.state
     this.setState({ selectedIndex: null })
     if (code) {
       try {
         const scannedUserId = JSON.parse(code.data)
+        if (Object.values(meetings).includes(scannedUserId)) {
+          Alert.alert('You already have a meeting scheduled with this person!')
+          return
+        }
         this.props.fbc.database.public
           .allRef('meetings')
           .push({ a: currentUser.id, b: scannedUserId, slotIndex: selectedIndex })
