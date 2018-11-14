@@ -46,7 +46,7 @@ const getAsyncStorageValue = async key =>
 const setAsyncStorageValue = async (key, value) => AsyncStorage.setItem(key, JSON.stringify(value))
 
 class HomeView extends PureComponent {
-  state = { selectedIndex: null, meetings: {} }
+  state = { selectedIndex: null, meetings: {}, allMeetings: [] }
   constructor(props) {
     super(props)
 
@@ -77,6 +77,7 @@ class HomeView extends PureComponent {
           .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
         meetingsRef.on('child_added', data => {
           const meeting = data.val()
+          this.setState(({ allMeetings }) => ({ allMeetings: [...allMeetings, meeting] }))
           if (meeting.a === currentUser.id || meeting.b === currentUser.id) {
             const otherId = meeting.a === currentUser.id ? meeting.b : meeting.a
             this.setState(({ meetings }) => ({
@@ -87,6 +88,11 @@ class HomeView extends PureComponent {
 
         meetingsRef.on('child_removed', data => {
           const meeting = data.val()
+          this.setState(({ allMeetings }) => ({
+            allMeetings: allMeetings.filter(
+              m => m.a !== meeting.a || m.b !== meeting.b || m.slotIndex !== meeting.slotIndex,
+            ),
+          }))
           if (meeting.a === currentUser.id || meeting.b === currentUser.id) {
             this.setState(({ meetings }) => ({
               meetings: { ...meetings, [meeting.slotIndex]: null },
@@ -236,13 +242,21 @@ class HomeView extends PureComponent {
   }
 
   onScan = code => {
-    const { selectedIndex, currentUser, meetings } = this.state
+    const { allMeetings, selectedIndex, currentUser, meetings } = this.state
     this.setState({ selectedIndex: null })
     if (code) {
       try {
         const scannedUserId = JSON.parse(code.data)
         if (Object.values(meetings).includes(scannedUserId)) {
           Alert.alert('You already have a meeting scheduled with this person!')
+          return
+        }
+        if (
+          allMeetings.find(
+            m => m.slotIndex === selectedIndex && (m.a === scannedUserId || m.b === scannedUserId),
+          )
+        ) {
+          Alert.alert('This person already has this slot filled. Sorry!')
           return
         }
         this.props.fbc.database.public
