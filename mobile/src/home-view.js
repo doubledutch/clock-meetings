@@ -108,6 +108,7 @@ class HomeView extends PureComponent {
   }
 
   render() {
+    const { suggestedTitle } = this.props
     const {
       currentSlotIndex,
       currentUser,
@@ -168,7 +169,7 @@ class HomeView extends PureComponent {
 
     return (
       <View style={s.container}>
-        <TitleBar title="MagicHour" client={client} signin={this.signin} />
+        <TitleBar title={suggestedTitle || 'MagicHour'} client={client} signin={this.signin} />
         <View style={s.main}>
           <View style={[s.clock, { height: width }]}>
             {[...Array(slotCount).keys()].map(renderSlot)}
