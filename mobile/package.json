@@ -7,8 +7,8 @@
     "clean": "watchman watch-del-all && rm -rf node_modules && rm -fr $TMPDIR/react-* && rm -rf ios/build && (yarn || npm i)"
   },
   "dependencies": {
-    "@doubledutch/firebase-connector": "^4.0.1",
-    "@doubledutch/rn-client": "5.0.0-alpha",
+    "@doubledutch/firebase-connector": "^4.1.2",
+    "@doubledutch/rn-client": "5.0.1-alpha",
     "lodash.debounce": "^4.0.8",
     "react": "16.6.1",
     "react-addons-update": "~15.6.0",
