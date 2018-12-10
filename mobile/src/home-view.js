@@ -345,7 +345,7 @@ const s = StyleSheet.create({
 
 export default provideFirebaseConnectorToReactComponent(
   client,
-  'clockmeetings',
+  'magichour',
   (props, fbc) => <HomeView {...props} fbc={fbc} />,
   PureComponent,
 )
