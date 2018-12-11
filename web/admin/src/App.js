@@ -46,6 +46,14 @@ class App extends PureComponent {
     if (currentSlotIndex === null) return <div>Loading...</div>
     return (
       <div className="vertical space-children">
+        <div>
+          Host a fast networking opportunity for your attendees. Choose 3-12
+          slots that attendees can fill (e.g. "Will you be my 'three o'clock?'"),
+          and optionally assign a topic to each slot. Attendees scan each other
+          to confirm their speed-dating-style meeting. Begin advancing the "clock"
+          (suggested 5 minutes per slot) and watch your attendees form new,
+          meaningful connections.
+        </div>
         <label>
           Number of slots:
           <input
@@ -81,13 +89,13 @@ class App extends PureComponent {
         )}
         <TextInput
           multiline
-          label="Enter ordered slot topics, one per line"
+          label="Enter ordered slot topics, one per line. (optional)"
           onChange={this.updateTopics}
           value={topics}
         />
         <div className="footer">
           <button className="dd-bordered destructive" onClick={this.clear}>
-            Clear all meetings!
+            Clear all attendees' scheduled meetings!
           </button>
         </div>
       </div>
