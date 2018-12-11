@@ -21,6 +21,7 @@ import {
   Button,
   Dimensions,
   Image,
+  SafeAreaView as SAV,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -37,9 +38,11 @@ import debounce from 'lodash.debounce'
 import FadeCarousel from './FadeCarousel'
 import { hand } from './images'
 
+const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
+
 const avatarSize = 50
 const clockPadding = 10
-const cachedUsersKey = 'concierge_cachedUsers'
+const cachedUsersKey = 'magichour_cachedUsers'
 
 const getAsyncStorageValue = async key =>
   AsyncStorage.getItem(key).then(val => (val ? JSON.parse(val) : null))
@@ -170,7 +173,7 @@ class HomeView extends PureComponent {
     return (
       <View style={s.container}>
         <TitleBar title={suggestedTitle || 'MagicHour'} client={client} signin={this.signin} />
-        <View style={s.main}>
+        <SafeAreaView style={s.main}>
           <View style={[s.clock, { height: width }]}>
             {[...Array(slotCount).keys()].map(renderSlot)}
           </View>
@@ -237,7 +240,7 @@ class HomeView extends PureComponent {
           )}
           <View />
           {isScanning && <Button title="Cancel" onPress={this.cancelSlotPress} />}
-        </View>
+        </SafeAreaView>
       </View>
     )
   }
