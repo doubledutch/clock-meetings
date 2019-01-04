@@ -42,6 +42,8 @@ module.exports = {
     // https://github.com/benmosher/eslint-plugin-import/issues/458
     'import/no-extraneous-dependencies': 'off',
 
+    'no-alert': 'off',
+
     // Recommend not to leave any console.log in your code
     // Use console.error, console.warn and console.info instead
     'no-console': [
@@ -58,6 +60,8 @@ module.exports = {
 
     // https://github.com/evcohen/eslint-plugin-jsx-a11y/issues/308#issuecomment-322954274
     'jsx-a11y/label-has-for': 'warn',
+
+    'react/destructuring-assignment': 'off',
 
     // Allow js files to use jsx syntax, too
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.jsx'] }],

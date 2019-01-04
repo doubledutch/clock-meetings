@@ -63,6 +63,8 @@ module.exports = {
 
     'jsx-a11y/accessible-emoji': 'off',
 
+    'react/destructuring-assignment': 'off',
+
     // Allow js files to use jsx syntax, too
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.jsx'] }],
 
