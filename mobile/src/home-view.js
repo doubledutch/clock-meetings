@@ -19,29 +19,22 @@ import {
   Alert,
   AsyncStorage,
   Button,
-  Dimensions,
-  Image,
   SafeAreaView as SAV,
+  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native'
 
 // rn-client must be imported before FirebaseConnector
-import client, { Avatar, TitleBar } from '@doubledutch/rn-client'
+import client, { TitleBar } from '@doubledutch/rn-client'
 import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
-import QRCode from 'react-native-qrcode'
-import QRCodeScanner from 'react-native-qrcode-scanner'
 import debounce from 'lodash.debounce'
 
-import FadeCarousel from './FadeCarousel'
-import { hand } from './images'
+import Clock from './Clock'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
-const avatarSize = 50
-const clockPadding = 10
 const cachedUsersKey = 'magichour_cachedUsers'
 
 const getAsyncStorageValue = async key =>
@@ -113,6 +106,7 @@ class HomeView extends PureComponent {
   render() {
     const { suggestedTitle } = this.props
     const {
+      allMeetings,
       currentSlotIndex,
       currentUser,
       meetings,
@@ -122,49 +116,6 @@ class HomeView extends PureComponent {
       topics,
     } = this.state
     if (!currentUser || !primaryColor || !slotCount) return <Text>Loading...</Text>
-    const windowWidth = Dimensions.get('window').width
-    const width = windowWidth - clockPadding * 2 - avatarSize
-    const scanWidth = Math.floor((width - avatarSize) / Math.sqrt(2))
-    const scanOffset = (windowWidth - scanWidth) / 2
-    const scanPosition = { top: scanOffset, left: scanOffset, height: scanWidth, width: scanWidth }
-    const scanSize = { height: scanWidth, width: scanWidth }
-    const handHeight = width * 0.9
-    const handWidth = handHeight * 0.122388059701493
-    const handPosition = {
-      height: handHeight,
-      width: handWidth,
-      top: (windowWidth - handHeight) / 2,
-      left: (windowWidth - handWidth) / 2,
-    }
-
-    const renderSlot = index => {
-      const angle = (index / slotCount) * Math.PI * 2
-      const position = {
-        top: (width * (1 - Math.cos(angle))) / 2,
-        left: (width * (1 + Math.sin(angle))) / 2,
-      }
-
-      const number = index || slotCount
-      const meetingUserId = meetings[index]
-      const user = meetingUserId
-        ? this.getCachedUser(meetingUserId)
-        : {
-            firstName: number > 9 ? `${Math.floor(number / 10)}` : '',
-            lastName: `${number % 10}`,
-          }
-      return (
-        <View style={currentSlotIndex === index ? s.selected : null} key={index}>
-          <TouchableOpacity style={[s.slot, position]} onPress={() => this.onPressSlot(index)}>
-            <Avatar
-              size={avatarSize}
-              user={user}
-              client={client}
-              backgroundColor={selectedIndex === index ? primaryColor : null}
-            />
-          </TouchableOpacity>
-        </View>
-      )
-    }
 
     const isScanning = selectedIndex != null
     const currentMeeting = currentSlotIndex > -1 ? meetings[currentSlotIndex % slotCount] : null
@@ -174,42 +125,19 @@ class HomeView extends PureComponent {
       <View style={s.container}>
         <TitleBar title={suggestedTitle || 'MagicHour'} client={client} signin={this.signin} />
         <SafeAreaView style={s.main}>
-          <View style={[s.clock, { height: width }]}>
-            {[...Array(slotCount).keys()].map(renderSlot)}
-          </View>
-          {currentSlotIndex > -1 && (
-            <Image
-              source={hand}
-              style={[
-                s.hand,
-                handPosition,
-                { transform: [{ rotate: `${(currentSlotIndex / slotCount) * 360}deg` }] },
-              ]}
+          <ScrollView>
+            <Clock
+              currentSlotIndex={currentSlotIndex}
+              selectedIndex={selectedIndex}
+              selectIndex={this.selectIndex}
+              meetings={meetings}
+              slotCount={slotCount}
+              currentUser={currentUser}
+              primaryColor={primaryColor}
+              allMeetings={allMeetings}
+              getCachedUser={this.getCachedUser}
             />
-          )}
-          <View style={[s.scan, scanPosition]}>
-            {isScanning ? (
-              client._b.isEmulated ? (
-                <Text>No scanner in emulator</Text>
-              ) : (
-                <QRCodeScanner
-                  onRead={this.onScan}
-                  cameraStyle={scanSize}
-                  permissionDialogTitle="Camera Permission"
-                  permissionDialogMessage="Required to scan for a meeting slot"
-                />
-              )
-            ) : currentMeeting ? (
-              <FadeCarousel key={currentSlotIndex}>
-                <View />
-                <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.5} />
-                <Avatar size={scanWidth} user={currentUser} client={client} roundedness={0.5} />
-                <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
-              </FadeCarousel>
-            ) : (
-              <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
-            )}
-          </View>
+          </ScrollView>
           {currentSlotIndex > -1 ? (
             otherUser ? (
               <View style={s.info}>
@@ -238,7 +166,6 @@ class HomeView extends PureComponent {
               )}
             </View>
           )}
-          <View />
           {isScanning && <Button title="Cancel" onPress={this.cancelSlotPress} />}
         </SafeAreaView>
       </View>
@@ -272,15 +199,7 @@ class HomeView extends PureComponent {
     }
   }
 
-  onPressSlot = index => {
-    const { meetings } = this.state
-    if (meetings[index]) {
-      this.setState({ selectedIndex: null })
-      client.openURL(`dd://profile/${meetings[index]}`)
-    } else {
-      this.setState({ selectedIndex: index })
-    }
-  }
+  selectIndex = selectedIndex => this.setState({selectedIndex})
 
   cancelSlotPress = () => this.setState({ selectedIndex: null })
 
@@ -313,22 +232,6 @@ const s = StyleSheet.create({
   },
   main: {
     flex: 1,
-  },
-  clock: {
-    margin: clockPadding,
-    flex: 1,
-  },
-  hand: {
-    position: 'absolute',
-  },
-  slot: {
-    position: 'absolute',
-  },
-  selected: {
-    opacity: 0.5,
-  },
-  scan: {
-    position: 'absolute',
   },
   info: {
     padding: 10,
