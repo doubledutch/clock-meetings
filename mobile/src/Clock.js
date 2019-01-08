@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,17 +15,8 @@
  */
 
 import React, { PureComponent } from 'react'
-import {
-  Alert,
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { Alert, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
-// rn-client must be imported before FirebaseConnector
 import client, { Avatar } from '@doubledutch/rn-client'
 import QRCode from 'react-native-qrcode'
 import QRCodeScanner from 'react-native-qrcode-scanner'
@@ -38,7 +29,15 @@ const clockPadding = 10
 
 export default class Clock extends PureComponent {
   render() {
-    const { currentSlotIndex, currentUser, getCachedUser, meetings, selectedIndex, slotCount, primaryColor } = this.props
+    const {
+      currentSlotIndex,
+      currentUser,
+      getCachedUser,
+      meetings,
+      selectedIndex,
+      slotCount,
+      primaryColor,
+    } = this.props
     const windowWidth = Dimensions.get('window').width
     const width = windowWidth - clockPadding * 2 - avatarSize
     const scanWidth = Math.floor((width - avatarSize) / Math.sqrt(2))
@@ -69,28 +68,32 @@ export default class Clock extends PureComponent {
             firstName: number > 9 ? `${Math.floor(number / 10)}` : '',
             lastName: `${number % 10}`,
           }
-      
+
       return (
         <View style={currentSlotIndex === index ? s.selected : null} key={index}>
-          <TouchableOpacity style={[s.slot, position]} onPress={() => this.onPressSlot(index)}>
+          <TouchableOpacity
+            style={[s.slot, position]}
+            onPress={() => this.props.selectIndex(index)}
+          >
             <Avatar
               size={avatarSize}
               user={user}
               client={client}
               backgroundColor={selectedIndex === index ? primaryColor : null}
+              roundedness={0.6}
             />
           </TouchableOpacity>
         </View>
       )
     }
 
-    const isScanning = selectedIndex != null
+    const isScanning = selectedIndex != null && !meetings[selectedIndex]
     const currentMeeting = currentSlotIndex > -1 ? meetings[currentSlotIndex % slotCount] : null
     const otherUser = currentMeeting ? this.props.getCachedUser(currentMeeting) : null
 
     return (
-      <View style={s.main}>
-        <View style={[s.clock, { height: width }]}>
+      <View>
+        <View style={[s.clock, { height: width + avatarSize }]}>
           {[...Array(slotCount).keys()].map(renderSlot)}
         </View>
         {currentSlotIndex > -1 && (
@@ -118,8 +121,8 @@ export default class Clock extends PureComponent {
           ) : currentMeeting ? (
             <FadeCarousel key={currentSlotIndex}>
               <View />
-              <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.5} />
-              <Avatar size={scanWidth} user={currentUser} client={client} roundedness={0.5} />
+              <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.6} />
+              <Avatar size={scanWidth} user={currentUser} client={client} roundedness={0.6} />
               <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
             </FadeCarousel>
           ) : (
@@ -154,16 +157,6 @@ export default class Clock extends PureComponent {
       } catch (e) {
         // Bad code
       }
-    }
-  }
-
-  onPressSlot = index => {
-    const { meetings, selectIndex } = this.props
-    if (meetings[index]) {
-      selectIndex(null)
-      client.openURL(`dd://profile/${meetings[index]}`)
-    } else {
-      selectIndex(index)
     }
   }
 

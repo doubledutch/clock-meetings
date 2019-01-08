@@ -22,6 +22,7 @@
     "rn-fetch-blob": "0.10.13"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
     "babel-jest": "23.6.0",
     "eslint": "^4.4.1",
     "eslint-config-airbnb": "^15.0.1",

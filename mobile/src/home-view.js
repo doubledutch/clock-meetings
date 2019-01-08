@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,18 +19,25 @@ import {
   Alert,
   AsyncStorage,
   Button,
+  Modal,
   SafeAreaView as SAV,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native'
 
 // rn-client must be imported before FirebaseConnector
 import client, { TitleBar } from '@doubledutch/rn-client'
-import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
+import {
+  provideFirebaseConnectorToReactComponent,
+  mapPushedDataToStateObjects,
+} from '@doubledutch/firebase-connector'
 import debounce from 'lodash.debounce'
 
+import AttendeeDetails from './AttendeeDetails'
+import AvailableAttendees from './AvailableAttendees'
 import Clock from './Clock'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
@@ -42,7 +49,7 @@ const getAsyncStorageValue = async key =>
 const setAsyncStorageValue = async (key, value) => AsyncStorage.setItem(key, JSON.stringify(value))
 
 class HomeView extends PureComponent {
-  state = { selectedIndex: null, meetings: {}, allMeetings: [] }
+  state = { selectedIndex: null, meetings: {}, allMeetings: [], attendeesWithTopics: {} }
   constructor(props) {
     super(props)
 
@@ -82,6 +89,8 @@ class HomeView extends PureComponent {
           }
         })
 
+        mapPushedDataToStateObjects(fbc.database.public.usersRef(), this, 'attendeesWithTopics')
+
         meetingsRef.on('child_removed', data => {
           const meeting = data.val()
           this.setState(({ allMeetings }) => ({
@@ -103,10 +112,35 @@ class HomeView extends PureComponent {
     })
   }
 
+  mutuallyAvailableSlotIndexes = otherId => {
+    const { allMeetings, currentUser, slotCount } = this.state
+    const ourMeetings = allMeetings.filter(
+      m => m.a === currentUser.id || m.b === currentUser.id || m.a === otherId || m.b === otherId,
+    )
+
+    // If we already have a meeting set with this attendee, don't show that we can schedule another slot.
+    if (
+      ourMeetings.find(
+        m =>
+          (m.a === currentUser.id && m.b === otherId) ||
+          (m.a === otherId && m.b === currentUser.id),
+      )
+    ) {
+      return []
+    }
+
+    const available = []
+    for (let i = 0; i < slotCount; ++i) {
+      if (!ourMeetings.find(m => m.slotIndex === i)) available.push(i)
+    }
+    return available
+  }
+
   render() {
     const { suggestedTitle } = this.props
     const {
       allMeetings,
+      attendeesWithTopics,
       currentSlotIndex,
       currentUser,
       meetings,
@@ -117,9 +151,20 @@ class HomeView extends PureComponent {
     } = this.state
     if (!currentUser || !primaryColor || !slotCount) return <Text>Loading...</Text>
 
-    const isScanning = selectedIndex != null
+    const isScanning = selectedIndex != null && !meetings[selectedIndex]
     const currentMeeting = currentSlotIndex > -1 ? meetings[currentSlotIndex % slotCount] : null
     const otherUser = currentMeeting ? this.getCachedUser(currentMeeting) : null
+
+    const availableAttendees = Object.entries(attendeesWithTopics)
+      .map(([id, attendee]) => ({
+        ...attendee,
+        id,
+        mutuallyAvailableSlots: this.mutuallyAvailableSlotIndexes(id),
+      }))
+      .filter(a => a.mutuallyAvailableSlots.length)
+
+    const slotsRemaining = slotCount - Object.keys(meetings).length
+    const selectedMeetingUserId = meetings[selectedIndex]
 
     return (
       <View style={s.container}>
@@ -137,6 +182,14 @@ class HomeView extends PureComponent {
               allMeetings={allMeetings}
               getCachedUser={this.getCachedUser}
             />
+            {!isScanning && slotsRemaining > 0 && (
+              <Text style={s.bookText}>
+                Book conversations you find meaningful and interesting while they are still
+                available! You have {slotsRemaining} open slot{slotsRemaining > 1 ? 's' : ''}{' '}
+                remaining.
+              </Text>
+            )}
+            {!isScanning && <AvailableAttendees attendees={availableAttendees} />}
           </ScrollView>
           {currentSlotIndex > -1 ? (
             otherUser ? (
@@ -156,18 +209,33 @@ class HomeView extends PureComponent {
               </View>
             )
           ) : (
-            <View style={s.info}>
-              {isScanning ? (
+            isScanning && (
+              <View style={s.info}>
                 <Text>
                   Scan the code for the attendee you are going to meet with during this time slot.
                 </Text>
-              ) : (
-                <Text>Tap an open slot number and scan someone to chat with during that time.</Text>
-              )}
-            </View>
+              </View>
+            )
           )}
           {isScanning && <Button title="Cancel" onPress={this.cancelSlotPress} />}
         </SafeAreaView>
+        <Modal
+          animationType="slide"
+          visible={!isScanning && !!selectedMeetingUserId}
+          onRequestClose={() => {}}
+        >
+          <SafeAreaView style={s.main}>
+            <AttendeeDetails
+              style={s.modalMain}
+              user={selectedMeetingUserId && this.getCachedUser(selectedMeetingUserId)}
+              topic={(attendeesWithTopics[selectedMeetingUserId] || {}).topic}
+              primaryColor={primaryColor}
+            />
+            <TouchableOpacity style={s.closeButton} onPress={this.selectNone}>
+              <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
       </View>
     )
   }
@@ -199,7 +267,8 @@ class HomeView extends PureComponent {
     }
   }
 
-  selectIndex = selectedIndex => this.setState({selectedIndex})
+  selectIndex = selectedIndex => this.setState({ selectedIndex })
+  selectNone = () => this.selectIndex(null)
 
   cancelSlotPress = () => this.setState({ selectedIndex: null })
 
@@ -218,7 +287,6 @@ class HomeView extends PureComponent {
       client.getAttendee(id).then(user => {
         this.cachedUsers[id] = { ...user, fetched: now }
         this.persistCachedUsers()
-        // this.hydrateUsersDebounced()
       })
     }
     return cached
@@ -233,6 +301,10 @@ const s = StyleSheet.create({
   main: {
     flex: 1,
   },
+  bookText: {
+    marginHorizontal: 10,
+    marginVertical: 5,
+  },
   info: {
     padding: 10,
   },
@@ -246,6 +318,18 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 16,
+  },
+  modalMain: {
+    flex: 1,
+  },
+  closeButton: {
+    padding: 10,
+    marginBottom: 20,
+  },
+  closeButtonText: {
+    fontSize: 24,
+    textAlign: 'center',
+    color: '#fff',
   },
 })
 
