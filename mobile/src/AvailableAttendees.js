@@ -18,32 +18,36 @@ import React from 'react'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Avatar } from '@doubledutch/rn-client'
 
-const renderItem = ({ item }) => (
-  <TouchableOpacity style={s.row}>
-    <Avatar size={60} user={item} roundedness={0.6} />
-    <View style={s.attendeeInfo}>
-      <Text style={s.name}>
-        {item.firstName} {item.lastName}
-      </Text>
-      <Text style={s.topic} ellipsizeMode="tail" numberOfLines={3}>
-        {item.topic}
-      </Text>
-    </View>
-  </TouchableOpacity>
-)
-
 const getId = x => x.id
 
-const AvailableAttendees = ({ attendees }) => (
-  <FlatList
-    style={s.list}
-    data={attendees}
-    renderItem={renderItem}
-    keyExtractor={getId}
-    ListHeaderComponent={ListHeader}
-    ItemSeparatorComponent={ItemSeparator}
-  />
-)
+const AvailableAttendees = ({ attendees, viewDetails }) => {
+  const viewAttendeeDetails = attendee => () => viewDetails(attendee)
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity style={s.row} onPress={viewAttendeeDetails(item)}>
+      <Avatar size={60} user={item} roundedness={0.6} />
+      <View style={s.attendeeInfo}>
+        <Text style={s.name}>
+          {item.firstName} {item.lastName}
+        </Text>
+        <Text style={s.topic} ellipsizeMode="tail" numberOfLines={3}>
+          {item.topic}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  )
+
+  return (
+    <FlatList
+      style={s.list}
+      data={attendees}
+      renderItem={renderItem}
+      keyExtractor={getId}
+      ListHeaderComponent={ListHeader}
+      ItemSeparatorComponent={ItemSeparator}
+    />
+  )
+}
 
 export default AvailableAttendees
 

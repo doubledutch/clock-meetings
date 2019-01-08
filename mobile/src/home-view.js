@@ -140,6 +140,7 @@ class HomeView extends PureComponent {
     const { suggestedTitle } = this.props
     const {
       allMeetings,
+      attendeeDetails,
       attendeesWithTopics,
       currentSlotIndex,
       currentUser,
@@ -189,7 +190,12 @@ class HomeView extends PureComponent {
                 remaining.
               </Text>
             )}
-            {!isScanning && <AvailableAttendees attendees={availableAttendees} />}
+            {!isScanning && (
+              <AvailableAttendees
+                attendees={availableAttendees}
+                viewDetails={this.viewAttendeeDetails}
+              />
+            )}
           </ScrollView>
           {currentSlotIndex > -1 ? (
             otherUser ? (
@@ -221,14 +227,17 @@ class HomeView extends PureComponent {
         </SafeAreaView>
         <Modal
           animationType="slide"
-          visible={!isScanning && !!selectedMeetingUserId}
+          visible={(!isScanning && !!selectedMeetingUserId) || !!attendeeDetails}
           onRequestClose={() => {}}
         >
           <SafeAreaView style={s.main}>
             <AttendeeDetails
               style={s.modalMain}
-              user={selectedMeetingUserId && this.getCachedUser(selectedMeetingUserId)}
-              topic={(attendeesWithTopics[selectedMeetingUserId] || {}).topic}
+              user={
+                attendeeDetails ||
+                (selectedMeetingUserId && this.getCachedUser(selectedMeetingUserId))
+              }
+              topic={(attendeeDetails || attendeesWithTopics[selectedMeetingUserId] || {}).topic}
               primaryColor={primaryColor}
             />
             <TouchableOpacity style={s.closeButton} onPress={this.selectNone}>
@@ -267,8 +276,10 @@ class HomeView extends PureComponent {
     }
   }
 
-  selectIndex = selectedIndex => this.setState({ selectedIndex })
+  selectIndex = selectedIndex => this.setState({ selectedIndex, attendeeDetails: null })
   selectNone = () => this.selectIndex(null)
+
+  viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
 
   cancelSlotPress = () => this.setState({ selectedIndex: null })
 
