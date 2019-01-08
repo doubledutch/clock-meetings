@@ -79,7 +79,7 @@ class HomeView extends PureComponent {
           .adminRef('currentSlotIndex')
           .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
         meetingsRef.on('child_added', data => {
-          const meeting = data.val()
+          const meeting = { ...data.val(), id: data.key }
           this.setState(({ allMeetings }) => ({ allMeetings: [...allMeetings, meeting] }))
           if (meeting.a === currentUser.id || meeting.b === currentUser.id) {
             const otherId = meeting.a === currentUser.id ? meeting.b : meeting.a
@@ -130,9 +130,12 @@ class HomeView extends PureComponent {
     }
 
     const available = []
-    for (let i = 0; i < slotCount; ++i) {
+    for (let i = 1; i < slotCount; ++i) {
       if (!ourMeetings.find(m => m.slotIndex === i)) available.push(i)
     }
+    // Do slot index 0 (12 o'clock?) last
+    if (!ourMeetings.find(m => m.slotIndex === 0)) available.push(0)
+
     return available
   }
 
@@ -166,6 +169,14 @@ class HomeView extends PureComponent {
 
     const slotsRemaining = slotCount - Object.keys(meetings).length
     const selectedMeetingUserId = meetings[selectedIndex]
+    const selectedMeeting =
+      selectedMeetingUserId == null
+        ? null
+        : allMeetings.find(
+            m =>
+              (m.a === currentUser.id && m.b === selectedMeetingUserId) ||
+              (m.b === currentUser.id && m.a === selectedMeetingUserId),
+          )
 
     return (
       <View style={s.container}>
@@ -183,14 +194,20 @@ class HomeView extends PureComponent {
               allMeetings={allMeetings}
               getCachedUser={this.getCachedUser}
             />
-            {!isScanning && slotsRemaining > 0 && (
+            {allMeetings.length > 1 && (
+              <View style={s.booked}>
+                <Text style={[s.bookedNum, { color: primaryColor }]}>{allMeetings.length}</Text>
+                <Text style={s.bookText}>meetings booked so far</Text>
+              </View>
+            )}
+            {!isScanning && slotsRemaining > 0 && availableAttendees.length > 0 && (
               <Text style={s.bookText}>
                 Book conversations you find meaningful and interesting while they are still
                 available! You have {slotsRemaining} open slot{slotsRemaining > 1 ? 's' : ''}{' '}
                 remaining.
               </Text>
             )}
-            {!isScanning && (
+            {!isScanning && availableAttendees.length > 0 && (
               <AvailableAttendees
                 attendees={availableAttendees}
                 viewDetails={this.viewAttendeeDetails}
@@ -237,8 +254,11 @@ class HomeView extends PureComponent {
                 attendeeDetails ||
                 (selectedMeetingUserId && this.getCachedUser(selectedMeetingUserId))
               }
-              topic={(attendeeDetails || attendeesWithTopics[selectedMeetingUserId] || {}).topic}
+              hasMeeting={!!selectedMeetingUserId && !attendeeDetails}
+              topic={(selectedMeeting || {}).topic || (attendeeDetails || {}).topic}
               primaryColor={primaryColor}
+              addMeeting={this.addMeeting}
+              removeMeeting={this.removeMeeting}
             />
             <TouchableOpacity style={s.closeButton} onPress={this.selectNone}>
               <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
@@ -250,7 +270,7 @@ class HomeView extends PureComponent {
   }
 
   onScan = code => {
-    const { allMeetings, selectedIndex, currentUser, meetings } = this.state
+    const { allMeetings, selectedIndex, meetings } = this.state
     this.setState({ selectedIndex: null })
     if (code) {
       try {
@@ -267,9 +287,7 @@ class HomeView extends PureComponent {
           Alert.alert('This person already has this slot filled. Sorry!')
           return
         }
-        this.props.fbc.database.public
-          .allRef('meetings')
-          .push({ a: currentUser.id, b: scannedUserId, slotIndex: selectedIndex })
+        this.addMeeting(scannedUserId, selectedIndex)
       } catch (e) {
         // Bad code
       }
@@ -282,6 +300,31 @@ class HomeView extends PureComponent {
   viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
 
   cancelSlotPress = () => this.setState({ selectedIndex: null })
+
+  addMeeting = (userId, slotIndex, topic) => {
+    const { currentUser } = this.state
+    const { fbc } = this.props
+    topic = topic || null
+    fbc.database.public
+      .allRef('meetings')
+      .push({ a: currentUser.id, b: userId, slotIndex, topic })
+      .then(() => this.setState({ attendeeDetails: null, selectIndex: null }))
+  }
+
+  removeMeeting = userId => {
+    const { allMeetings, currentUser } = this.state
+    const { fbc } = this.props
+    const meeting = allMeetings.find(
+      m => (m.a === currentUser.id && m.b === userId) || (m.a === userId && m.b === currentUser.id),
+    )
+
+    if (meeting)
+      fbc.database.public
+        .allRef('meetings')
+        .child(meeting.id)
+        .remove()
+        .then(() => this.setState({ attendeeDetails: null, selectedIndex: null }))
+  }
 
   persistCachedUsers = debounce(() => setAsyncStorageValue(cachedUsersKey, this.cachedUsers), 5000)
   getCachedUser = id => {
@@ -311,6 +354,17 @@ const s = StyleSheet.create({
   },
   main: {
     flex: 1,
+  },
+  booked: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  bookedNum: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   bookText: {
     marginHorizontal: 10,

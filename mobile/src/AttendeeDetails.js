@@ -16,12 +16,31 @@
 
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import client, { Avatar } from '@doubledutch/rn-client'
+import client, { Avatar, Color } from '@doubledutch/rn-client'
 
-const AttendeeDetails = ({ primaryColor, style, topic, user }) => {
+const getSecondaryColor = primaryColor =>
+  new Color(primaryColor)
+    .shiftHue(-1 / 3)
+    .limitLightness(0.8)
+    .rgbString()
+
+const AttendeeDetails = ({
+  addMeeting,
+  hasMeeting,
+  primaryColor,
+  removeMeeting,
+  style,
+  topic,
+  user,
+}) => {
   if (!user) return null
+
   const viewProfile = () => client.openURL(`dd://profile/${user.id}`)
+  const addMeetingWithUser = () => addMeeting(user.id, user.mutuallyAvailableSlots[0], user.topic)
+  const removeMeetingWithUser = () => removeMeeting(user.id)
+
   const primaryBackground = { backgroundColor: primaryColor }
+  const secondaryBackground = { backgroundColor: getSecondaryColor(primaryColor) }
 
   return (
     <View style={style}>
@@ -29,7 +48,7 @@ const AttendeeDetails = ({ primaryColor, style, topic, user }) => {
         <View style={s.box}>
           <View style={s.row}>
             <Avatar user={user} size={100} roundedness={0.6} />
-            <View style={s.conciergeInfoBox}>
+            <View style={s.infoBox}>
               <Text style={s.name}>
                 {user.firstName} {user.lastName}
               </Text>
@@ -43,6 +62,22 @@ const AttendeeDetails = ({ primaryColor, style, topic, user }) => {
             <Text style={s.topic}>{topic}</Text>
           </View>
         </View>
+        {user.mutuallyAvailableSlots != null && user.mutuallyAvailableSlots.length > 0 && (
+          <TouchableOpacity
+            onPress={addMeetingWithUser}
+            style={[s.footerButton, secondaryBackground]}
+          >
+            <Text style={s.footerButtonText}>Add Meeting</Text>
+          </TouchableOpacity>
+        )}
+        {hasMeeting && (
+          <TouchableOpacity
+            onPress={removeMeetingWithUser}
+            style={[s.footerButton, s.destructiveBackground]}
+          >
+            <Text style={s.footerButtonText}>Remove Meeting</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={viewProfile} style={[s.footerButton, primaryBackground]}>
           <Text style={s.footerButtonText}>View Profile</Text>
         </TouchableOpacity>
@@ -67,8 +102,9 @@ const s = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 10,
   },
-  conciergeInfoBox: {
+  infoBox: {
     marginLeft: 10,
+    flex: 1,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
@@ -108,5 +144,8 @@ const s = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  destructiveBackground: {
+    backgroundColor: '#d14e53',
   },
 })
