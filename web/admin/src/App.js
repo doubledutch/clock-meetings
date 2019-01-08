@@ -17,8 +17,11 @@
 import React, { PureComponent } from 'react'
 
 import client from '@doubledutch/admin-client'
-import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
-import { TextInput } from '@doubledutch/react-components'
+import {
+  provideFirebaseConnectorToReactComponent,
+  mapPushedDataToStateObjects,
+} from '@doubledutch/firebase-connector'
+import { Avatar, TextInput } from '@doubledutch/react-components'
 import CsvParse from '@vtex/react-csv-parse'
 import { CSVLink } from 'react-csv'
 import '@doubledutch/react-components/lib/base.css'
@@ -26,7 +29,7 @@ import '@doubledutch/react-components/lib/base.css'
 import './App.css'
 
 class App extends PureComponent {
-  state = { slotCount: 12, currentSlotIndex: null }
+  state = { slotCount: 12, currentSlotIndex: null, meetings: {} }
 
   componentDidMount() {
     const { fbc } = this.props
@@ -40,11 +43,13 @@ class App extends PureComponent {
       fbc.database.public
         .adminRef('topics')
         .on('value', data => this.setState({ topics: data.val() || '' }))
+
+      mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
     })
   }
 
   render() {
-    const { currentSlotIndex, slotCount, topics } = this.state
+    const { currentSlotIndex, meetings, slotCount, topics } = this.state
     if (currentSlotIndex === null) return <div>Loading...</div>
     return (
       <div className="vertical space-children">
@@ -110,8 +115,54 @@ class App extends PureComponent {
             Clear all attendees&apos; scheduled meetings!
           </button>
         </div>
+        <div>{Object.keys(meetings).length} meetings booked:</div>
+        <div className="space-children vertical">
+          {Object.values(meetings).map(m => (
+            <div className="space-children horizontal" key={m.id}>
+              <button className="dd-bordered destructive" onClick={() => this.removeMeeting(m.id)}>
+                REMOVE
+              </button>
+              <Avatar user={this.getCachedUser(m.a) || {}} />
+              <Avatar user={this.getCachedUser(m.b) || {}} />
+              <span>
+                {(this.getCachedUser(m.a) || {}).firstName}{' '}
+                {(this.getCachedUser(m.a) || {}).lastName} -{' '}
+                {(this.getCachedUser(m.b) || {}).firstName}{' '}
+                {(this.getCachedUser(m.b) || {}).lastName} (slot {m.slotIndex || slotCount})
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     )
+  }
+
+  cachedUsers = {}
+  getCachedUser = id => {
+    let cached = this.cachedUsers[id]
+    const now = new Date().valueOf()
+
+    // Refetch attendee in the background if too old.
+    if (!cached || !cached.fetched || cached.fetched + 1000 * 60 * 60 * 12 < now) {
+      // Cache a placeholder so we don't lookup the same user multiple times
+      if (!cached) cached = { id }
+      cached.fetched = now
+      this.cachedUsers[id] = cached
+
+      client.getAttendee(id).then(user => {
+        this.cachedUsers[id] = { ...user, fetched: now }
+        this.setState({ c: now })
+      })
+    }
+    return cached
+  }
+
+  removeMeeting = id => {
+    if (window.confirm(`Are you sure you want to delete this booked meeting?`))
+      this.props.fbc.database.public
+        .allRef('meetings')
+        .child(id)
+        .remove()
   }
 
   getCSVTemplate = () => [
