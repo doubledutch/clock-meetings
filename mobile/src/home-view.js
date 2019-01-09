@@ -165,7 +165,7 @@ class HomeView extends PureComponent {
         id,
         mutuallyAvailableSlots: this.mutuallyAvailableSlotIndexes(id),
       }))
-      .filter(a => a.mutuallyAvailableSlots.length)
+      .filter(a => a.mutuallyAvailableSlots.length && a.id !== currentUser.id)
 
     const slotsRemaining = slotCount - Object.keys(meetings).length
     const selectedMeetingUserId = meetings[selectedIndex]
