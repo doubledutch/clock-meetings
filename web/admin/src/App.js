@@ -55,10 +55,10 @@ class App extends PureComponent {
       <div className="vertical space-children">
         <div>
           Host a fast networking opportunity for your attendees. Choose 3-12 slots that attendees
-          can fill (e.g. &quot;Will you be my &apos;three o&apos;clock?&apos;&quot;), and optionally
-          assign a default topic to each slot. Attendees scan each other to confirm their
-          speed-dating-style meeting. Begin advancing the &quot;clock&quot; (suggested 5 minutes per
-          slot) and watch your attendees form new, meaningful connections.
+          can fill (e.g. &quot;Will you be my third slot?&quot;), and optionally assign a default
+          topic to each slot. Attendees scan each other to confirm their speed-dating-style meeting.
+          Begin advancing the clock (suggested 5 minutes per slot) and watch your attendees form
+          new, meaningful connections.
         </div>
         <label>
           Number of slots:
@@ -73,7 +73,7 @@ class App extends PureComponent {
         </label>
         {currentSlotIndex < 0 ? (
           <button className="dd-bordered" onClick={this.startOneOClock}>
-            Start the &quot;1 o&apos;clock&quot; meeting
+            Start the first meeting
           </button>
         ) : (
           <div>

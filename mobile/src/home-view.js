@@ -167,6 +167,13 @@ class HomeView extends PureComponent {
       }))
       .filter(a => a.mutuallyAvailableSlots.length && a.id !== currentUser.id)
 
+    const attendeesToList =
+      selectedIndex == null
+        ? availableAttendees
+        : availableAttendees
+            .filter(a => a.mutuallyAvailableSlots.includes(selectedIndex))
+            .map(a => ({ ...a, mutuallyAvailableSlots: [selectedIndex] }))
+
     const slotsRemaining = slotCount - Object.keys(meetings).length
     const selectedMeetingUserId = meetings[selectedIndex]
     const selectedMeeting =
@@ -194,23 +201,19 @@ class HomeView extends PureComponent {
               allMeetings={allMeetings}
               getCachedUser={this.getCachedUser}
             />
-            {allMeetings.length > 1 && (
-              <View style={s.booked}>
-                <Text style={[s.bookedNum, { color: primaryColor }]}>{allMeetings.length}</Text>
-                <Text style={s.bookText}>meetings booked so far</Text>
-              </View>
-            )}
             {!isScanning && slotsRemaining > 0 && availableAttendees.length > 0 && (
               <Text style={s.bookText}>
-                Book conversations you find meaningful and interesting while they are still
-                available! You have {slotsRemaining} open slot{slotsRemaining > 1 ? 's' : ''}{' '}
-                remaining.
+                Choose your speed networking partners! You&apos;ll have 5 minutes to chat with each
+                person on their topic at the event.
               </Text>
             )}
-            {!isScanning && availableAttendees.length > 0 && (
+            {attendeesToList.length > 0 && (
               <AvailableAttendees
-                attendees={availableAttendees}
+                attendees={attendeesToList}
                 viewDetails={this.viewAttendeeDetails}
+                addMeeting={this.addMeeting}
+                primaryColor={primaryColor}
+                totalBookCount={allMeetings.length}
               />
             )}
           </ScrollView>
@@ -235,7 +238,8 @@ class HomeView extends PureComponent {
             isScanning && (
               <View style={s.info}>
                 <Text>
-                  Scan the code for the attendee you are going to meet with during this time slot.
+                  Select from attendees available in slot {selectedIndex || slotCount} or scan their
+                  code live in person.
                 </Text>
               </View>
             )
@@ -259,6 +263,7 @@ class HomeView extends PureComponent {
               primaryColor={primaryColor}
               addMeeting={this.addMeeting}
               removeMeeting={this.removeMeeting}
+              dismiss={this.selectNone}
             />
             <TouchableOpacity style={s.closeButton} onPress={this.selectNone}>
               <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
@@ -305,10 +310,8 @@ class HomeView extends PureComponent {
     const { currentUser } = this.state
     const { fbc } = this.props
     topic = topic || null
-    fbc.database.public
-      .allRef('meetings')
-      .push({ a: currentUser.id, b: userId, slotIndex, topic })
-      .then(() => this.setState({ attendeeDetails: null, selectIndex: null }))
+    fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex, topic })
+    this.setState({ attendeeDetails: null, selectedIndex: null, isScanning: false })
   }
 
   removeMeeting = userId => {
@@ -354,17 +357,6 @@ const s = StyleSheet.create({
   },
   main: {
     flex: 1,
-  },
-  booked: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  bookedNum: {
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   bookText: {
     marginHorizontal: 10,

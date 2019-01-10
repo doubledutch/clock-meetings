@@ -15,12 +15,19 @@
  */
 
 import React from 'react'
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Avatar } from '@doubledutch/rn-client'
+import { plus } from './images'
 
 const getId = x => x.id
 
-const AvailableAttendees = ({ attendees, viewDetails }) => {
+const AvailableAttendees = ({
+  addMeeting,
+  attendees,
+  viewDetails,
+  primaryColor,
+  totalBookCount,
+}) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
 
   const renderItem = ({ item }) => (
@@ -30,16 +37,29 @@ const AvailableAttendees = ({ attendees, viewDetails }) => {
         <Text style={s.name}>
           {item.firstName} {item.lastName}
         </Text>
-        <Text style={s.topic} ellipsizeMode="tail" numberOfLines={3}>
+        <Text style={s.topic} ellipsizeMode="tail" numberOfLines={2}>
           {item.topic}
         </Text>
+        <Text style={[s.more, { color: primaryColor }]}>More</Text>
       </View>
+      <TouchableOpacity
+        style={[s.actions, { borderColor: primaryColor }]}
+        onPress={() => addMeeting(item.id, item.mutuallyAvailableSlots[0], item.topic)}
+      >
+        <Image source={plus} style={[s.actionIcon, { backgroundColor: primaryColor }]} />
+      </TouchableOpacity>
     </TouchableOpacity>
+  )
+
+  const ListHeader = () => (
+    <View style={s.listHeader}>
+      <Text style={s.listHeaderText}>Trending Topics</Text>
+      {totalBookCount > 0 && <Text>🔗 {totalBookCount} reserved</Text>}
+    </View>
   )
 
   return (
     <FlatList
-      style={s.list}
       data={attendees}
       renderItem={renderItem}
       keyExtractor={getId}
@@ -51,23 +71,29 @@ const AvailableAttendees = ({ attendees, viewDetails }) => {
 
 export default AvailableAttendees
 
-const ListHeader = () => <Text style={s.listHeader}>AVAILABLE TOPICS</Text>
-
 const ItemSeparator = () => <View style={s.separator} />
 
 const s = StyleSheet.create({
-  list: {
-    margin: 10,
-  },
   listHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 7,
-    textAlign: 'center',
+    backgroundColor: 'white',
+    borderBottomWidth: 2,
+    borderColor: '#d9d9d9',
+    paddingVertical: 7,
+    paddingHorizontal: 15,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  listHeaderText: {
+    fontSize: 16,
+    fontWeight: '300',
+    textAlign: 'left',
   },
   row: {
+    backgroundColor: 'white',
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 6,
   },
   attendeeInfo: {
     flex: 1,
@@ -80,9 +106,24 @@ const s = StyleSheet.create({
   },
   topic: {
     fontSize: 14,
+    color: '#555',
     flex: 1,
   },
+  actions: {
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 5,
+  },
+  actionIcon: {
+    height: 20,
+    width: 20,
+  },
   separator: {
-    height: 10,
+    height: 1,
+    backgroundColor: '#d9d9d9',
   },
 })

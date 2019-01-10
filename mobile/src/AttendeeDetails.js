@@ -26,6 +26,7 @@ const getSecondaryColor = primaryColor =>
 
 const AttendeeDetails = ({
   addMeeting,
+  dismiss,
   hasMeeting,
   primaryColor,
   removeMeeting,
@@ -35,7 +36,10 @@ const AttendeeDetails = ({
 }) => {
   if (!user) return null
 
-  const viewProfile = () => client.openURL(`dd://profile/${user.id}`)
+  const viewProfile = () => {
+    dismiss()
+    client.openURL(`dd://profile/${user.id}`)
+  }
   const addMeetingWithUser = () => addMeeting(user.id, user.mutuallyAvailableSlots[0], user.topic)
   const removeMeetingWithUser = () => removeMeeting(user.id)
 
