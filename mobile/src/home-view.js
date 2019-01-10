@@ -155,9 +155,20 @@ class HomeView extends PureComponent {
     } = this.state
     if (!currentUser || !primaryColor || !slotCount) return <Text>Loading...</Text>
 
+    const meetingWith = userId =>
+      userId == null
+        ? null
+        : allMeetings.find(
+            m =>
+              (m.a === currentUser.id && m.b === userId) ||
+              (m.b === currentUser.id && m.a === userId),
+          )
+
     const isScanning = selectedIndex != null && !meetings[selectedIndex]
-    const currentMeeting = currentSlotIndex > -1 ? meetings[currentSlotIndex % slotCount] : null
-    const otherUser = currentMeeting ? this.getCachedUser(currentMeeting) : null
+    const currentMeetingUserId =
+      currentSlotIndex > -1 ? meetings[currentSlotIndex % slotCount] : null
+    const otherUser = currentMeetingUserId ? this.getCachedUser(currentMeetingUserId) : null
+    const currentMeeting = meetingWith(currentMeetingUserId)
 
     const availableAttendees = Object.entries(attendeesWithTopics)
       .map(([id, attendee]) => ({
@@ -176,14 +187,7 @@ class HomeView extends PureComponent {
 
     const slotsRemaining = slotCount - Object.keys(meetings).length
     const selectedMeetingUserId = meetings[selectedIndex]
-    const selectedMeeting =
-      selectedMeetingUserId == null
-        ? null
-        : allMeetings.find(
-            m =>
-              (m.a === currentUser.id && m.b === selectedMeetingUserId) ||
-              (m.b === currentUser.id && m.a === selectedMeetingUserId),
-          )
+    const selectedMeeting = meetingWith(selectedMeetingUserId)
 
     return (
       <View style={s.container}>
@@ -221,7 +225,9 @@ class HomeView extends PureComponent {
             otherUser ? (
               <View style={s.info}>
                 <Text style={s.infoTitle}>
-                  Current meeting: {topics[currentSlotIndex % slotCount || slotCount]}
+                  Current meeting:{' '}
+                  {(currentMeeting && currentMeeting.topic) ||
+                    topics[currentSlotIndex % slotCount || slotCount]}
                 </Text>
                 <Text style={s.name}>
                   {otherUser.firstName} {otherUser.lastName}
@@ -238,7 +244,7 @@ class HomeView extends PureComponent {
             isScanning && (
               <View style={s.info}>
                 <Text>
-                  Select from attendees available in slot {selectedIndex || slotCount} or scan their
+                  Select from attendees available in slot {selectedIndex || slotCount} or scan a
                   code live in person.
                 </Text>
               </View>

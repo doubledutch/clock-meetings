@@ -78,7 +78,7 @@ class App extends PureComponent {
         ) : (
           <div>
             <label>
-              Current &quot;o&apos;clock&quot; time:
+              Current meeting slot:
               <input
                 className="number"
                 type="number"
