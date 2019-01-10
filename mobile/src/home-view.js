@@ -39,10 +39,12 @@ import debounce from 'lodash.debounce'
 import AttendeeDetails from './AttendeeDetails'
 import AvailableAttendees from './AvailableAttendees'
 import Clock from './Clock'
+import Welcome from './Welcome'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
 const cachedUsersKey = 'magichour_cachedUsers'
+const welcomeCompleteKey = 'magichour_welcomeComplete'
 
 const getAsyncStorageValue = async key =>
   AsyncStorage.getItem(key).then(val => (val ? JSON.parse(val) : null))
@@ -60,6 +62,9 @@ class HomeView extends PureComponent {
     getAsyncStorageValue(cachedUsersKey).then(users => {
       this.cachedUsers = { ...(users || {}), ...this.cachedUsers }
     })
+    getAsyncStorageValue(welcomeCompleteKey).then(isWelcomeComplete =>
+      this.setState({ isWelcomeComplete }),
+    )
   }
 
   componentDidMount() {
@@ -147,6 +152,7 @@ class HomeView extends PureComponent {
       attendeesWithTopics,
       currentSlotIndex,
       currentUser,
+      isWelcomeComplete,
       meetings,
       primaryColor,
       selectedIndex,
@@ -189,69 +195,77 @@ class HomeView extends PureComponent {
     const selectedMeetingUserId = meetings[selectedIndex]
     const selectedMeeting = meetingWith(selectedMeetingUserId)
 
+    const renderContent = () => (
+      <SafeAreaView style={s.main}>
+        <ScrollView>
+          <Clock
+            currentSlotIndex={currentSlotIndex}
+            selectedIndex={selectedIndex}
+            selectIndex={this.selectIndex}
+            meetings={meetings}
+            slotCount={slotCount}
+            currentUser={currentUser}
+            primaryColor={primaryColor}
+            allMeetings={allMeetings}
+            getCachedUser={this.getCachedUser}
+          />
+          {!isScanning && slotsRemaining > 0 && availableAttendees.length > 0 && (
+            <Text style={s.bookText}>
+              Choose your speed networking partners! You&apos;ll have 5 minutes to chat with each
+              person on their topic at the event.
+            </Text>
+          )}
+          {attendeesToList.length > 0 && (
+            <AvailableAttendees
+              attendees={attendeesToList}
+              viewDetails={this.viewAttendeeDetails}
+              addMeeting={this.addMeeting}
+              primaryColor={primaryColor}
+              totalBookCount={allMeetings.length}
+            />
+          )}
+        </ScrollView>
+        {currentSlotIndex > -1 ? (
+          otherUser ? (
+            <View style={s.info}>
+              <Text style={s.infoTitle}>
+                Current meeting:{' '}
+                {(currentMeeting && currentMeeting.topic) ||
+                  topics[currentSlotIndex % slotCount || slotCount]}
+              </Text>
+              <Text style={s.name}>
+                {otherUser.firstName} {otherUser.lastName}
+              </Text>
+              <Text style={s.title}>{otherUser.title}</Text>
+              <Text style={s.title}>{otherUser.company}</Text>
+            </View>
+          ) : (
+            <View style={s.info}>
+              <Text style={s.infoTitle}>No meeting currently</Text>
+            </View>
+          )
+        ) : (
+          isScanning && (
+            <View style={s.info}>
+              <Text>
+                Select a conversation partner from &quot;Trending Topics&quot; OR scan a code live,
+                in person. code live in person.
+              </Text>
+            </View>
+          )
+        )}
+        {isScanning && <Button title="Cancel" onPress={this.cancelSlotPress} />}
+      </SafeAreaView>
+    )
+
     return (
       <View style={s.container}>
         <TitleBar title={suggestedTitle || 'MagicHour'} client={client} signin={this.signin} />
-        <SafeAreaView style={s.main}>
-          <ScrollView>
-            <Clock
-              currentSlotIndex={currentSlotIndex}
-              selectedIndex={selectedIndex}
-              selectIndex={this.selectIndex}
-              meetings={meetings}
-              slotCount={slotCount}
-              currentUser={currentUser}
-              primaryColor={primaryColor}
-              allMeetings={allMeetings}
-              getCachedUser={this.getCachedUser}
-            />
-            {!isScanning && slotsRemaining > 0 && availableAttendees.length > 0 && (
-              <Text style={s.bookText}>
-                Choose your speed networking partners! You&apos;ll have 5 minutes to chat with each
-                person on their topic at the event.
-              </Text>
-            )}
-            {attendeesToList.length > 0 && (
-              <AvailableAttendees
-                attendees={attendeesToList}
-                viewDetails={this.viewAttendeeDetails}
-                addMeeting={this.addMeeting}
-                primaryColor={primaryColor}
-                totalBookCount={allMeetings.length}
-              />
-            )}
-          </ScrollView>
-          {currentSlotIndex > -1 ? (
-            otherUser ? (
-              <View style={s.info}>
-                <Text style={s.infoTitle}>
-                  Current meeting:{' '}
-                  {(currentMeeting && currentMeeting.topic) ||
-                    topics[currentSlotIndex % slotCount || slotCount]}
-                </Text>
-                <Text style={s.name}>
-                  {otherUser.firstName} {otherUser.lastName}
-                </Text>
-                <Text style={s.title}>{otherUser.title}</Text>
-                <Text style={s.title}>{otherUser.company}</Text>
-              </View>
-            ) : (
-              <View style={s.info}>
-                <Text style={s.infoTitle}>No meeting currently</Text>
-              </View>
-            )
-          ) : (
-            isScanning && (
-              <View style={s.info}>
-                <Text>
-                  Select from attendees available in slot {selectedIndex || slotCount} or scan a
-                  code live in person.
-                </Text>
-              </View>
-            )
-          )}
-          {isScanning && <Button title="Cancel" onPress={this.cancelSlotPress} />}
-        </SafeAreaView>
+        {isWelcomeComplete ? (
+          renderContent()
+        ) : (
+          <Welcome dismiss={this.dismissWelcome} primaryColor={primaryColor} />
+        )}
         <Modal
           animationType="slide"
           visible={(!isScanning && !!selectedMeetingUserId) || !!attendeeDetails}
@@ -303,6 +317,11 @@ class HomeView extends PureComponent {
         // Bad code
       }
     }
+  }
+
+  dismissWelcome = () => {
+    this.setState({ isWelcomeComplete: true })
+    setAsyncStorageValue(welcomeCompleteKey, true)
   }
 
   selectIndex = selectedIndex => this.setState({ selectedIndex, attendeeDetails: null })
