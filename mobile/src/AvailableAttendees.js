@@ -54,7 +54,7 @@ const AvailableAttendees = ({
   const ListHeader = () => (
     <View style={s.listHeader}>
       <Text style={s.listHeaderText}>Trending Topics</Text>
-      {totalBookCount > 0 && <Text>🔗 {totalBookCount} reserved</Text>}
+      {/* {totalBookCount > 0 && <Text>🔗 {totalBookCount} reserved</Text>} */}
     </View>
   )
 

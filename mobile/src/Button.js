@@ -21,7 +21,7 @@ export default ({ children, color, disabled, onPress, style, text }) => (
   <TouchableOpacity
     onPress={onPress}
     disabled={disabled}
-    style={[s.button, { backgroundColor: color }, style, disabled ? s.disabled : null]}
+    style={[s.button, style, disabled ? s.disabled : { backgroundColor: color }]}
   >
     {children}
     <Text style={s.buttonText}>
@@ -39,7 +39,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   disabled: {
-    opacity: 0.4,
+    backgroundColor: '#ccc',
   },
   buttonText: {
     color: 'white',
