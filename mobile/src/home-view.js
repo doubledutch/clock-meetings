@@ -191,7 +191,6 @@ class HomeView extends PureComponent {
             .filter(a => a.mutuallyAvailableSlots.includes(selectedIndex))
             .map(a => ({ ...a, mutuallyAvailableSlots: [selectedIndex] }))
 
-    const slotsRemaining = slotCount - Object.keys(meetings).length
     const selectedMeetingUserId = meetings[selectedIndex]
     const selectedMeeting = meetingWith(selectedMeetingUserId)
 
@@ -209,12 +208,6 @@ class HomeView extends PureComponent {
             allMeetings={allMeetings}
             getCachedUser={this.getCachedUser}
           />
-          {!isScanning && slotsRemaining > 0 && availableAttendees.length > 0 && (
-            <Text style={s.bookText}>
-              Choose your speed networking partners! You&apos;ll have 5 minutes to chat with each
-              person on their topic at the event.
-            </Text>
-          )}
           {attendeesToList.length > 0 && (
             <AvailableAttendees
               attendees={attendeesToList}
