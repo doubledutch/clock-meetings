@@ -249,13 +249,23 @@ class HomeView extends PureComponent {
       </SafeAreaView>
     )
 
+    const helpTexts = [
+      `Magic Hour is a live, face-to-face speed-networking experience designed to get rid of small talk and make sure everyone walks away with at least ${slotCount} new friends`,
+      `Browse through guests’ topics and choose ${slotCount} conversation partners now. You’ll get 5 minutes with each person you choose.`,
+      'If you don’t choose now, you can scan QR codes of people live at the event. However, you might find yourself with a more limited selection of partners. Ready? Set? Choose your partners!',
+    ]
+
     return (
       <View style={s.container}>
         <TitleBar title={suggestedTitle || 'MagicHour'} client={client} signin={this.signin} />
         {isWelcomeComplete ? (
           renderContent()
         ) : (
-          <Welcome dismiss={this.dismissWelcome} primaryColor={primaryColor} />
+          <Welcome
+            dismiss={this.dismissWelcome}
+            primaryColor={primaryColor}
+            helpTexts={helpTexts}
+          />
         )}
         <Modal
           animationType="slide"

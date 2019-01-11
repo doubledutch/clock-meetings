@@ -19,18 +19,16 @@ import { StyleSheet, Text, View } from 'react-native'
 import Button from './Button'
 import Carousel from './Carousel'
 
-const helpTexts = ['Thank you for joining', 'Placeholder 2', 'Placeholder 3']
-
 export default class Welcome extends PureComponent {
   state = { canAccept: false }
 
   render() {
-    const { dismiss, primaryColor } = this.props
+    const { dismiss, helpTexts, primaryColor } = this.props
     const { canAccept } = this.state
     return (
       <View style={s.buttonBottomContainer}>
         <View>
-          <Text style={s.welcome}>Welcome!</Text>
+          <Text style={s.welcome}>Welcome to Magic Hour!</Text>
           <Carousel texts={helpTexts} onStepChange={this.onStepChange} style={s.carousel} />
         </View>
         <Button
