@@ -214,7 +214,7 @@ class HomeView extends PureComponent {
               viewDetails={this.viewAttendeeDetails}
               addMeeting={this.addMeeting}
               primaryColor={primaryColor}
-              totalBookCount={allMeetings.length}
+              slotCount={slotCount}
             />
           )}
         </ScrollView>

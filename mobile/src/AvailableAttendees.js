@@ -21,13 +21,7 @@ import { plus } from './images'
 
 const getId = x => x.id
 
-const AvailableAttendees = ({
-  addMeeting,
-  attendees,
-  viewDetails,
-  primaryColor,
-  totalBookCount,
-}) => {
+const AvailableAttendees = ({ addMeeting, attendees, viewDetails, primaryColor, slotCount }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
 
   const renderItem = ({ item }) => (
@@ -53,8 +47,10 @@ const AvailableAttendees = ({
 
   const ListHeader = () => (
     <View style={s.listHeader}>
-      <Text style={s.listHeaderText}>Trending Topics</Text>
-      {/* {totalBookCount > 0 && <Text>🔗 {totalBookCount} reserved</Text>} */}
+      <Text style={s.listHeaderText}>Choose Your Networking Partners</Text>
+      <Text style={s.listHeaderDescText}>
+        Select {slotCount} people to have 5 minute chats with at the event.
+      </Text>
     </View>
   )
 
@@ -80,14 +76,18 @@ const s = StyleSheet.create({
     borderColor: '#d9d9d9',
     paddingVertical: 7,
     paddingHorizontal: 15,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'row',
   },
   listHeaderText: {
     fontSize: 16,
     fontWeight: '300',
     textAlign: 'left',
+  },
+  listHeaderDescText: {
+    fontSize: 12,
+    fontWeight: '300',
+    textAlign: 'left',
+    color: '#555',
+    marginTop: 3,
   },
   row: {
     backgroundColor: 'white',
