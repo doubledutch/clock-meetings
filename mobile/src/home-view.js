@@ -196,6 +196,15 @@ class HomeView extends PureComponent {
 
     const renderContent = () => (
       <SafeAreaView style={s.main}>
+        {currentSlotIndex < 0 && isScanning && (
+          <View style={s.info}>
+            <Text>
+              Choose a networking partner ahead of time OR scan someone&apos;s code live at the
+              event.
+            </Text>
+            <Button title="Cancel" onPress={this.cancelSlotPress} />
+          </View>
+        )}
         <ScrollView>
           <Clock
             currentSlotIndex={currentSlotIndex}
@@ -218,8 +227,8 @@ class HomeView extends PureComponent {
             />
           )}
         </ScrollView>
-        {currentSlotIndex > -1 ? (
-          otherUser ? (
+        {currentSlotIndex > -1 &&
+          (otherUser ? (
             <View style={s.info}>
               <Text style={s.infoTitle}>
                 Current meeting:{' '}
@@ -236,18 +245,7 @@ class HomeView extends PureComponent {
             <View style={s.info}>
               <Text style={s.infoTitle}>No meeting currently</Text>
             </View>
-          )
-        ) : (
-          isScanning && (
-            <View style={s.info}>
-              <Text>
-                Select a conversation partner from &quot;Trending Topics&quot; OR scan a code live,
-                in person. code live in person.
-              </Text>
-            </View>
-          )
-        )}
-        {isScanning && <Button title="Cancel" onPress={this.cancelSlotPress} />}
+          ))}
       </SafeAreaView>
     )
 
