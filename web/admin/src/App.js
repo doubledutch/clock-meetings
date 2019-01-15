@@ -185,7 +185,10 @@ class App extends PureComponent {
       .then(topics => topics.filter(x => x && x.id && x.topic != null))
       .then(attendeesWithTopics => {
         const attendeeUpdates = attendeesWithTopics.reduce((obj, attendeeWithTopic) => {
-          obj[attendeeWithTopic.id] = { ...attendeeWithTopic, id: null }
+          obj[attendeeWithTopic.id] =
+            attendeeWithTopic.topic && attendeeWithTopic.topic.trim()
+              ? { ...attendeeWithTopic, id: null }
+              : null // remove attendees with no topic set.
           return obj
         }, {})
         fbc.database.public.usersRef().update(attendeeUpdates)
