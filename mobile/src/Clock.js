@@ -26,6 +26,7 @@ import { hand } from './images'
 
 const avatarSize = 50
 const clockPadding = 10
+const indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 export default class Clock extends PureComponent {
   render() {
@@ -70,11 +71,11 @@ export default class Clock extends PureComponent {
           }
 
       return (
-        <View style={currentSlotIndex === index ? s.selected : null} key={index}>
-          <TouchableOpacity
-            style={[s.slot, position]}
-            onPress={() => this.props.selectIndex(index)}
-          >
+        <View
+          style={[currentSlotIndex === index ? s.selected : null, s.slot, position]}
+          key={index}
+        >
+          <TouchableOpacity onPress={() => this.props.selectIndex(index)}>
             <Avatar
               size={avatarSize}
               user={user}
@@ -94,7 +95,7 @@ export default class Clock extends PureComponent {
     return (
       <View>
         <View style={[s.clock, { height: width + avatarSize }]}>
-          {[...Array(slotCount).keys()].map(renderSlot)}
+          {indexes.slice(0, slotCount).map(renderSlot)}
         </View>
         {currentSlotIndex > -1 && (
           <Image
@@ -164,23 +165,24 @@ export default class Clock extends PureComponent {
 }
 
 const s = StyleSheet.create({
-  main: {
-    flex: 1,
-  },
   clock: {
     margin: clockPadding,
     flex: 1,
   },
   hand: {
     position: 'absolute',
+    zIndex: 3,
   },
   slot: {
     position: 'absolute',
+    zIndex: 1,
   },
   selected: {
     opacity: 0.5,
   },
   scan: {
+    overflow: 'hidden',
     position: 'absolute',
+    zIndex: 2,
   },
 })

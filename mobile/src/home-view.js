@@ -384,10 +384,6 @@ const s = StyleSheet.create({
   main: {
     flex: 1,
   },
-  bookText: {
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
   info: {
     padding: 10,
   },
