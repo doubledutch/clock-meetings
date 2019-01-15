@@ -216,6 +216,7 @@ class HomeView extends PureComponent {
             primaryColor={primaryColor}
             allMeetings={allMeetings}
             getCachedUser={this.getCachedUser}
+            addMeeting={this.addMeeting}
           />
           {attendeesToList.length > 0 && (
             <AvailableAttendees

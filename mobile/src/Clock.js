@@ -135,7 +135,14 @@ export default class Clock extends PureComponent {
   }
 
   onScan = code => {
-    const { allMeetings, selectedIndex, selectIndex, currentUser, meetings } = this.props
+    const {
+      addMeeting,
+      allMeetings,
+      selectedIndex,
+      selectIndex,
+      currentUser,
+      meetings,
+    } = this.props
     selectIndex(null)
     if (code) {
       try {
@@ -152,11 +159,9 @@ export default class Clock extends PureComponent {
           Alert.alert('This person already has this slot filled. Sorry!')
           return
         }
-        this.props.fbc.database.public
-          .allRef('meetings')
-          .push({ a: currentUser.id, b: scannedUserId, slotIndex: selectedIndex })
+        addMeeting(scannedUserId, selectedIndex)
       } catch (e) {
-        // Bad code
+        Alert.alert('Scan error', e.message)
       }
     }
   }
