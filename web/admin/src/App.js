@@ -154,28 +154,32 @@ class App extends PureComponent {
       cached.fetched = now
       this.cachedUsers[id] = cached
 
+      const removeAttendee = () => {
+        const { fbc } = this.props
+        // Remove deleted attendee's info.
+        fbc.database.public.usersRef(id).remove()
+
+        // Remove deleted attendee's meetings.
+        Object.values(this.state.meetings)
+          .filter(m => m.a === id || m.b === id)
+          .forEach(m =>
+            fbc.database.public
+              .allRef('meetings')
+              .child(m.id)
+              .remove(),
+          )
+      }
+
       client
         .getAttendee(id)
         .then(user => {
           this.cachedUsers[id] = { ...user, fetched: now }
           this.setState({ c: now })
+          if (!user) removeAttendee()
         })
-        .catch(e => {
-          if (e.status === 404) {
-            const { fbc } = this.props
-            // Remove deleted attendee's info.
-            fbc.database.public.usersRef(id).remove()
-
-            // Remove deleted attendee's meetings.
-            Object.values(this.state.meetings)
-              .filter(m => m.a === id || m.b === id)
-              .forEach(m =>
-                fbc.database.public
-                  .allRef('meetings')
-                  .child(m.id)
-                  .remove(),
-              )
-          }
+        .catch(() => {
+          this.cachedUsers[id] = { fetched: now }
+          removeAttendee()
         })
     }
     return cached
