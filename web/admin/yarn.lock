@@ -870,10 +870,10 @@
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
   integrity sha512-5a6wqoJV/xEdbRNKVo6I4hO3VjyDq//8q2f9I6PBAvMesJHFauXDorcNCsr9RzvsZnaWi5NYCcfyqP1QeFHFbw==
 
-"@doubledutch/admin-client@^2.0.1":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@doubledutch/admin-client/-/admin-client-2.0.2.tgz#ad461e8acdc3f315fa301313926a79edf464f984"
-  integrity sha512-M+JBn1GMl6hbahYqfyc073MjOZpxwGNVI/Ram15L8oPe03ZclvjcApN1Rfx51+hoSy0LFbT9ocI549i+8hqLzg==
+"@doubledutch/admin-client@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@doubledutch/admin-client/-/admin-client-2.1.1.tgz#f86c97f626e4c6899b9ded8b19deafafe4e176ed"
+  integrity sha512-/IDOf858q8bqAKVnLl36k84Vx1fafx3rEDCawPwjxfIqewcU4x7AJGW1e8k0ftE70OwWBY0RLxaghuRxK/mcPg==
   dependencies:
     babel-runtime "^6.26.0"
 
