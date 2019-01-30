@@ -120,29 +120,15 @@ export default class Clock extends PureComponent {
               />
             )
           ) : currentMeeting ? (
-            <FadeCarousel key={currentSlotIndex}>
-              <View />
-              <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.6} />
-              <Avatar size={scanWidth} user={currentUser} client={client} roundedness={0.6} />
-              <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
-            </FadeCarousel>
-          ) : (
-            <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
-          )}
+            <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.6} />
+          ) : null}
         </View>
       </View>
     )
   }
 
   onScan = code => {
-    const {
-      addMeeting,
-      allMeetings,
-      selectedIndex,
-      selectIndex,
-      currentUser,
-      meetings,
-    } = this.props
+    const { addMeeting, allMeetings, selectedIndex, selectIndex, meetings } = this.props
     selectIndex(null)
     if (code) {
       try {
