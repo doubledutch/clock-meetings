@@ -387,6 +387,7 @@ const s = StyleSheet.create({
   },
   info: {
     padding: 10,
+    backgroundColor: 'white',
   },
   infoTitle: {
     fontSize: 14,
