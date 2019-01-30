@@ -87,6 +87,7 @@ module.exports = {
       },
     ],
 
+    'no-nested-ternary': 'off',
     'no-param-reassign': 'off',
     'no-plusplus': 'off',
     'prefer-rest-params': 'warn',

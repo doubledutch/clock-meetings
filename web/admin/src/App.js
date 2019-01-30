@@ -29,7 +29,7 @@ import '@doubledutch/react-components/lib/base.css'
 import './App.css'
 
 class App extends PureComponent {
-  state = { slotCount: 12, currentSlotIndex: null, meetings: {} }
+  state = { slotCount: 12, currentSlotIndex: null, meetings: {}, users: {} }
 
   componentDidMount() {
     const { fbc } = this.props
@@ -43,19 +43,29 @@ class App extends PureComponent {
       fbc.database.public
         .adminRef('topics')
         .on('value', data => this.setState({ topics: data.val() || '' }))
+      fbc.database.public
+        .adminRef('requireIsHere')
+        .on('value', data => this.setState({ requireIsHere: data.val() || false }))
 
       mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
 
-      fbc.database.public.usersRef().on('child_added', data => {
-        // Trigger lookup for attendee, which will delete their data if not found (deleted).
-        this.getCachedUser(data.key)
+      mapPushedDataToStateObjects(fbc.database.public.usersRef(), this, 'users', key => {
+        // Trigger lookup for attendee as a side-effect, which will delete their data if not found (deleted).
+        this.getCachedUser(key)
+        return key
       })
     })
   }
 
   render() {
-    const { currentSlotIndex, meetings, slotCount, topics } = this.state
+    const { currentSlotIndex, meetings, requireIsHere, slotCount, topics, users } = this.state
     if (currentSlotIndex === null) return <div>Loading...</div>
+
+    const userIsHere = id => users[id] != null && users[id].isHere
+    const notHereMeetings = requireIsHere
+      ? Object.values(meetings).filter(m => !userIsHere(m.a) || !userIsHere(m.b))
+      : []
+
     return (
       <div className="vertical space-children">
         <div>
@@ -77,9 +87,35 @@ class App extends PureComponent {
           />
         </label>
         {currentSlotIndex < 0 ? (
-          <button className="dd-bordered" onClick={this.startOneOClock}>
-            Start the first meeting
-          </button>
+          <div className="horizontal space-children">
+            <button className="dd-bordered" onClick={this.startOneOClock}>
+              Start the first meeting
+            </button>
+            {requireIsHere ? (
+              notHereMeetings.length ? (
+                [
+                  <button className="dd-bordered secondary" onClick={this.requireIsHere(false)}>
+                    Don&apos;t require &quot;I&apos;m here&quot;.
+                  </button>,
+                  <button
+                    className="dd-bordered destructive"
+                    onClick={() => this.removeMeetings(notHereMeetings)}
+                  >
+                    Remove {notHereMeetings.length} meetings of attendees who have not tapped
+                    &quot;I&apos;m here&quot;.
+                  </button>,
+                ]
+              ) : (
+                <span>
+                  All attendees with meetings scheduled have tapped &quot;I&apos;m here&quot;.
+                </span>
+              )
+            ) : (
+              <button className="dd-bordered secondary" onClick={this.requireIsHere(true)}>
+                Require all attendees to tap &quot;I&apos;m here&quot; first.
+              </button>
+            )}
+          </div>
         ) : (
           <div>
             <label>
@@ -187,11 +223,22 @@ class App extends PureComponent {
 
   removeMeeting = id => {
     if (window.confirm(`Are you sure you want to delete this booked meeting?`))
-      this.props.fbc.database.public
-        .allRef('meetings')
-        .child(id)
-        .remove()
+      this.removeMeetingWithoutConfirm(id)
   }
+
+  removeMeetings = meetings => {
+    if (
+      window.confirm(`Are you sure you want to delete these ${meetings.length} booked meetings?`)
+    ) {
+      meetings.forEach(m => this.removeMeetingWithoutConfirm(m.id))
+    }
+  }
+
+  removeMeetingWithoutConfirm = id =>
+    this.props.fbc.database.public
+      .allRef('meetings')
+      .child(id)
+      .remove()
 
   getCSVTemplate = () => [
     {
@@ -240,6 +287,22 @@ class App extends PureComponent {
 
   startOneOClock = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(1)
   endMeetings = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(-1)
+  requireIsHere = isRequired => () => {
+    const { fbc } = this.props
+    fbc.database.public.adminRef('requireIsHere').set(isRequired)
+    if (isRequired) {
+      fbc.database.public.usersRef().once('value', data => {
+        Object.entries(data.val() || {})
+          .filter(([id, user]) => user.isHere)
+          .forEach(([id, user]) =>
+            fbc.database.public
+              .usersRef(id)
+              .child('isHere')
+              .remove(),
+          )
+      })
+    }
+  }
 
   clear = () => {
     if (

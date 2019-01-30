@@ -83,6 +83,10 @@ class HomeView extends PureComponent {
         fbc.database.public
           .adminRef('currentSlotIndex')
           .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
+        fbc.database.public
+          .adminRef('requireIsHere')
+          .on('value', data => this.setState({ requireIsHere: data.val() || false }))
+
         meetingsRef.on('child_added', data => {
           const meeting = { ...data.val(), id: data.key }
           this.setState(({ allMeetings }) => ({ allMeetings: [...allMeetings, meeting] }))
@@ -155,6 +159,7 @@ class HomeView extends PureComponent {
       isWelcomeComplete,
       meetings,
       primaryColor,
+      requireIsHere,
       selectedIndex,
       slotCount,
       topics,
@@ -184,71 +189,83 @@ class HomeView extends PureComponent {
       }))
       .filter(a => a.mutuallyAvailableSlots.length && a.id !== currentUser.id)
 
-    const attendeesToList =
-      selectedIndex == null
-        ? availableAttendees
-        : availableAttendees
-            .filter(a => a.mutuallyAvailableSlots.includes(selectedIndex))
-            .map(a => ({ ...a, mutuallyAvailableSlots: [selectedIndex] }))
+    let attendeesToList = availableAttendees
+    if (selectedIndex != null) {
+      attendeesToList = attendeesToList
+        .filter(a => a.mutuallyAvailableSlots.includes(selectedIndex))
+        .map(a => ({ ...a, mutuallyAvailableSlots: [selectedIndex] }))
+    }
+    if (requireIsHere) {
+      attendeesToList = attendeesToList.filter(u => u.isHere)
+    }
 
     const selectedMeetingUserId = meetings[selectedIndex]
     const selectedMeeting = meetingWith(selectedMeetingUserId)
+    const me = attendeesWithTopics[currentUser.id] || {}
+    const title = suggestedTitle || 'MagicHour'
 
-    const renderContent = () => (
-      <SafeAreaView style={s.main}>
-        {currentSlotIndex < 0 && isScanning && (
-          <View style={s.info}>
-            <Text>
-              Choose a networking partner ahead of time OR scan someone&apos;s code live at the
-              event.
-            </Text>
-            <Button title="Cancel" onPress={this.cancelSlotPress} />
-          </View>
-        )}
-        <ScrollView>
-          <Clock
-            currentSlotIndex={currentSlotIndex}
-            selectedIndex={selectedIndex}
-            selectIndex={this.selectIndex}
-            meetings={meetings}
-            slotCount={slotCount}
-            currentUser={currentUser}
-            primaryColor={primaryColor}
-            allMeetings={allMeetings}
-            getCachedUser={this.getCachedUser}
-            addMeeting={this.addMeeting}
-          />
-          {attendeesToList.length > 0 && (
-            <AvailableAttendees
-              attendees={attendeesToList}
-              viewDetails={this.viewAttendeeDetails}
-              addMeeting={this.addMeeting}
-              primaryColor={primaryColor}
-              slotCount={slotCount}
-            />
+    const renderContent = () =>
+      requireIsHere && !me.isHere ? (
+        <View style={s.ready}>
+          <Text style={s.readyText}>Are you ready for {title}?</Text>
+          <Text style={s.readyText}>Mark yourself as ready!</Text>
+          <Button title="I'm Here" onPress={this.setIsHere} />
+        </View>
+      ) : (
+        <SafeAreaView style={s.main}>
+          {currentSlotIndex < 0 && isScanning && (
+            <View style={s.info}>
+              <Text>
+                Choose a networking partner ahead of time OR scan someone&apos;s code live at the
+                event.
+              </Text>
+              <Button title="Cancel" onPress={this.cancelSlotPress} />
+            </View>
           )}
-        </ScrollView>
-        {currentSlotIndex > -1 &&
-          (otherUser ? (
-            <View style={s.info}>
-              <Text style={s.infoTitle}>
-                Current meeting:{' '}
-                {(currentMeeting && currentMeeting.topic) ||
-                  topics[currentSlotIndex % slotCount || slotCount]}
-              </Text>
-              <Text style={s.name}>
-                {otherUser.firstName} {otherUser.lastName}
-              </Text>
-              <Text style={s.title}>{otherUser.title}</Text>
-              <Text style={s.title}>{otherUser.company}</Text>
-            </View>
-          ) : (
-            <View style={s.info}>
-              <Text style={s.infoTitle}>No meeting currently</Text>
-            </View>
-          ))}
-      </SafeAreaView>
-    )
+          <ScrollView>
+            <Clock
+              currentSlotIndex={currentSlotIndex}
+              selectedIndex={selectedIndex}
+              selectIndex={this.selectIndex}
+              meetings={meetings}
+              slotCount={slotCount}
+              currentUser={currentUser}
+              primaryColor={primaryColor}
+              allMeetings={allMeetings}
+              getCachedUser={this.getCachedUser}
+              addMeeting={this.addMeeting}
+            />
+            {attendeesToList.length > 0 && (
+              <AvailableAttendees
+                attendees={attendeesToList}
+                viewDetails={this.viewAttendeeDetails}
+                addMeeting={this.addMeeting}
+                primaryColor={primaryColor}
+                slotCount={slotCount}
+              />
+            )}
+          </ScrollView>
+          {currentSlotIndex > -1 &&
+            (otherUser ? (
+              <View style={s.info}>
+                <Text style={s.infoTitle}>
+                  Current meeting:{' '}
+                  {(currentMeeting && currentMeeting.topic) ||
+                    topics[currentSlotIndex % slotCount || slotCount]}
+                </Text>
+                <Text style={s.name}>
+                  {otherUser.firstName} {otherUser.lastName}
+                </Text>
+                <Text style={s.title}>{otherUser.title}</Text>
+                <Text style={s.title}>{otherUser.company}</Text>
+              </View>
+            ) : (
+              <View style={s.info}>
+                <Text style={s.infoTitle}>No meeting currently</Text>
+              </View>
+            ))}
+        </SafeAreaView>
+      )
 
     const helpTexts = [
       `Magic Hour is a live, face-to-face speed-networking experience designed to get rid of small talk and make sure everyone walks away with at least ${slotCount} new friends`,
@@ -258,7 +275,7 @@ class HomeView extends PureComponent {
 
     return (
       <View style={s.container}>
-        <TitleBar title={suggestedTitle || 'MagicHour'} client={client} signin={this.signin} />
+        <TitleBar title={title} client={client} signin={this.signin} />
         {isWelcomeComplete ? (
           renderContent()
         ) : (
@@ -332,6 +349,7 @@ class HomeView extends PureComponent {
   viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
 
   cancelSlotPress = () => this.setState({ selectedIndex: null })
+  setIsHere = () => this.props.fbc.database.public.userRef('isHere').set(true)
 
   addMeeting = (userId, slotIndex, topic) => {
     const { currentUser } = this.state
@@ -411,6 +429,16 @@ const s = StyleSheet.create({
     fontSize: 24,
     textAlign: 'center',
     color: '#fff',
+  },
+  ready: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  readyText: {
+    fontSize: 24,
+    margin: 10,
+    textAlign: 'center',
   },
 })
 
