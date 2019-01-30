@@ -21,7 +21,6 @@ import client, { Avatar } from '@doubledutch/rn-client'
 import QRCode from 'react-native-qrcode'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 
-import FadeCarousel from './FadeCarousel'
 import { hand } from './images'
 
 const avatarSize = 50
@@ -121,7 +120,9 @@ export default class Clock extends PureComponent {
             )
           ) : currentMeeting ? (
             <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.6} />
-          ) : null}
+          ) : (
+            <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
+          )}
         </View>
       </View>
     )
