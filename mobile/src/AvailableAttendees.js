@@ -38,7 +38,7 @@ const AvailableAttendees = ({ addMeeting, attendees, viewDetails, primaryColor, 
       </View>
       <TouchableOpacity
         style={[s.actions, { borderColor: primaryColor }]}
-        onPress={() => addMeeting(item.id, item.mutuallyAvailableSlots[0], item.topic)}
+        onPress={() => addMeeting(item.id, item.mutuallyAvailableSlots[0])}
       >
         <Image source={plus} style={[s.actionIcon, { backgroundColor: primaryColor }]} />
       </TouchableOpacity>

@@ -200,9 +200,13 @@ class HomeView extends PureComponent {
     }
 
     const selectedMeetingUserId = meetings[selectedIndex]
-    const selectedMeeting = meetingWith(selectedMeetingUserId)
     const me = attendeesWithTopics[currentUser.id] || {}
     const title = suggestedTitle || 'MagicHour'
+    const topicForMeeting = m => {
+      const a = attendeesWithTopics[m.a]
+      const b = attendeesWithTopics[m.b]
+      return `${[(a && a.topic) || '', (b && b.topic) || ''].join('   |   ')}`
+    }
 
     const renderContent = () =>
       requireIsHere && !me.isHere ? (
@@ -250,7 +254,7 @@ class HomeView extends PureComponent {
               <View style={s.info}>
                 <Text style={s.infoTitle}>
                   Current meeting:{' '}
-                  {(currentMeeting && currentMeeting.topic) ||
+                  {(currentMeeting && topicForMeeting(currentMeeting)) ||
                     topics[currentSlotIndex % slotCount || slotCount]}
                 </Text>
                 <Text style={s.name}>
@@ -298,7 +302,10 @@ class HomeView extends PureComponent {
                 (selectedMeetingUserId && this.getCachedUser(selectedMeetingUserId))
               }
               hasMeeting={!!selectedMeetingUserId && !attendeeDetails}
-              topic={(selectedMeeting || {}).topic || (attendeeDetails || {}).topic}
+              topic={
+                (attendeeDetails || {}).topic ||
+                (attendeesWithTopics[selectedMeetingUserId] || {}).topic
+              }
               primaryColor={primaryColor}
               addMeeting={this.addMeeting}
               removeMeeting={this.removeMeeting}
@@ -351,11 +358,10 @@ class HomeView extends PureComponent {
   cancelSlotPress = () => this.setState({ selectedIndex: null })
   setIsHere = () => this.props.fbc.database.public.userRef('isHere').set(true)
 
-  addMeeting = (userId, slotIndex, topic) => {
+  addMeeting = (userId, slotIndex) => {
     const { currentUser } = this.state
     const { fbc } = this.props
-    topic = topic || null
-    fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex, topic })
+    fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex })
     this.setState({ attendeeDetails: null, selectedIndex: null, isScanning: false })
   }
 
@@ -413,6 +419,7 @@ const s = StyleSheet.create({
     color: 'gray',
   },
   name: {
+    marginTop: 5,
     fontSize: 20,
   },
   title: {

@@ -40,7 +40,7 @@ const AttendeeDetails = ({
     dismiss()
     client.openURL(`dd://profile/${user.id}`)
   }
-  const addMeetingWithUser = () => addMeeting(user.id, user.mutuallyAvailableSlots[0], user.topic)
+  const addMeetingWithUser = () => addMeeting(user.id, user.mutuallyAvailableSlots[0])
   const removeMeetingWithUser = () => removeMeeting(user.id)
 
   const primaryBackground = { backgroundColor: primaryColor }
