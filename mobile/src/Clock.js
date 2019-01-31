@@ -148,7 +148,7 @@ export default class Clock extends PureComponent {
         }
         addMeeting(scannedUserId, selectedIndex)
       } catch (e) {
-        Alert.alert('Scan error', e.message)
+        Alert.alert('Scan error', 'Invalid code')
       }
     }
   }
