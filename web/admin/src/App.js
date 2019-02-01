@@ -92,24 +92,24 @@ class App extends PureComponent {
               Start the first meeting
             </button>
             {requireIsHere ? (
-              notHereMeetings.length ? (
-                [
-                  <button className="dd-bordered secondary" onClick={this.requireIsHere(false)}>
-                    Don&apos;t require &quot;I&apos;m here&quot;.
-                  </button>,
+              [
+                <button className="dd-bordered secondary" onClick={this.requireIsHere(false)}>
+                  Don&apos;t require &quot;I&apos;m here&quot;.
+                </button>,
+                notHereMeetings.length > 0 ? (
                   <button
                     className="dd-bordered destructive"
                     onClick={() => this.removeMeetings(notHereMeetings)}
                   >
                     Remove {notHereMeetings.length} meetings of attendees who have not tapped
                     &quot;I&apos;m here&quot;.
-                  </button>,
-                ]
-              ) : (
-                <span>
-                  All attendees with meetings scheduled have tapped &quot;I&apos;m here&quot;.
-                </span>
-              )
+                  </button>
+                ) : (
+                  <span>
+                    All attendees with meetings scheduled have tapped &quot;I&apos;m here&quot;.
+                  </span>
+                ),
+              ]
             ) : (
               <button className="dd-bordered secondary" onClick={this.requireIsHere(true)}>
                 Require all attendees to tap &quot;I&apos;m here&quot; first.
