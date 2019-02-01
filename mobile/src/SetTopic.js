@@ -23,8 +23,8 @@ const kavBehavior = Platform.select({ ios: 'padding', android: null })
 export default formWithSave(['topic'], ({ fieldSet, save, primaryColor }) => (
   <KeyboardAvoidingView style={s.container} behavior={kavBehavior}>
     <Text style={s.instructions}>
-      Set or change your personal topic question(s). Advertise an intriguing quesion that you want
-      to discuss!
+      Set or change the question you want to talk about during Magic Hour! No small talk, go for the
+      deep questions (other guests select you based on the depth of your questions).
     </Text>
     <TextInputWithDraft
       fieldSet={fieldSet}
