@@ -39,19 +39,27 @@ import debounce from 'lodash.debounce'
 import AttendeeDetails from './AttendeeDetails'
 import AvailableAttendees from './AvailableAttendees'
 import Clock from './Clock'
+import SetTopic from './SetTopic'
 import Welcome from './Welcome'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
 const cachedUsersKey = 'magichour_cachedUsers'
 const welcomeCompleteKey = 'magichour_welcomeComplete'
+const topicCompleteKey = 'magichour_topicComplete'
 
 const getAsyncStorageValue = async key =>
   AsyncStorage.getItem(key).then(val => (val ? JSON.parse(val) : null))
 const setAsyncStorageValue = async (key, value) => AsyncStorage.setItem(key, JSON.stringify(value))
 
 class HomeView extends PureComponent {
-  state = { selectedIndex: null, meetings: {}, allMeetings: [], attendeesWithTopics: {} }
+  state = {
+    selectedIndex: null,
+    meetings: {},
+    allMeetings: [],
+    attendeesWithTopics: {},
+    showSettings: false,
+  }
   constructor(props) {
     super(props)
 
@@ -64,6 +72,9 @@ class HomeView extends PureComponent {
     })
     getAsyncStorageValue(welcomeCompleteKey).then(isWelcomeComplete =>
       this.setState({ isWelcomeComplete }),
+    )
+    getAsyncStorageValue(topicCompleteKey).then(isTopicComplete =>
+      this.setState({ isTopicComplete }),
     )
   }
 
@@ -156,11 +167,13 @@ class HomeView extends PureComponent {
       attendeesWithTopics,
       currentSlotIndex,
       currentUser,
+      isTopicComplete,
       isWelcomeComplete,
       meetings,
       primaryColor,
       requireIsHere,
       selectedIndex,
+      showSettings,
       slotCount,
       topics,
     } = this.state
@@ -210,11 +223,11 @@ class HomeView extends PureComponent {
 
     const renderContent = () =>
       requireIsHere && !me.isHere ? (
-        <View style={s.ready}>
+        <SafeAreaView style={s.ready}>
           <Text style={s.readyText}>Are you ready for {title}?</Text>
           <Text style={s.readyText}>Mark yourself as ready!</Text>
           <Button title="I'm Here" onPress={this.setIsHere} />
-        </View>
+        </SafeAreaView>
       ) : (
         <SafeAreaView style={s.main}>
           {currentSlotIndex < 0 && isScanning && (
@@ -226,6 +239,7 @@ class HomeView extends PureComponent {
               <Button title="Cancel" onPress={this.cancelSlotPress} />
             </View>
           )}
+          <SettingsButton onPress={this.showSettings} />
           <ScrollView>
             <Clock
               currentSlotIndex={currentSlotIndex}
@@ -280,8 +294,12 @@ class HomeView extends PureComponent {
     return (
       <View style={s.container}>
         <TitleBar title={title} client={client} signin={this.signin} />
-        {isWelcomeComplete ? (
+        {isTopicComplete ? (
           renderContent()
+        ) : isWelcomeComplete ? (
+          <SafeAreaView style={s.container}>
+            <SetTopic topic={me && me.topic} onSave={this.saveTopic} primaryColor={primaryColor} />
+          </SafeAreaView>
         ) : (
           <Welcome
             dismiss={this.dismissWelcome}
@@ -289,6 +307,11 @@ class HomeView extends PureComponent {
             helpTexts={helpTexts}
           />
         )}
+        <Modal animationType="slide" visible={showSettings}>
+          <SafeAreaView style={s.container}>
+            <SetTopic topic={me && me.topic} onSave={this.saveTopic} primaryColor={primaryColor} />
+          </SafeAreaView>
+        </Modal>
         <Modal
           animationType="slide"
           visible={(!isScanning && !!selectedMeetingUserId) || !!attendeeDetails}
@@ -350,8 +373,16 @@ class HomeView extends PureComponent {
     setAsyncStorageValue(welcomeCompleteKey, true)
   }
 
+  saveTopic = ({ topic }) => {
+    this.setState({ isTopicComplete: true, showSettings: false })
+    this.props.fbc.database.public.userRef('topic').set(topic)
+    setAsyncStorageValue(topicCompleteKey, true)
+  }
+
   selectIndex = selectedIndex => this.setState({ selectedIndex, attendeeDetails: null })
   selectNone = () => this.selectIndex(null)
+
+  showSettings = () => this.setState({ showSettings: true })
 
   viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
 
@@ -401,6 +432,12 @@ class HomeView extends PureComponent {
   }
 }
 
+const SettingsButton = ({ onPress }) => (
+  <TouchableOpacity onPress={onPress} style={s.settingsButton}>
+    <Text style={s.settingsGear}>⚙️</Text>
+  </TouchableOpacity>
+)
+
 const s = StyleSheet.create({
   container: {
     flex: 1,
@@ -446,6 +483,16 @@ const s = StyleSheet.create({
     fontSize: 24,
     margin: 10,
     textAlign: 'center',
+  },
+  settingsButton: {
+    zIndex: 5,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    padding: 10,
+  },
+  settingsGear: {
+    fontSize: 30,
   },
 })
 
