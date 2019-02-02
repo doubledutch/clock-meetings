@@ -44,7 +44,7 @@ const s = StyleSheet.create({
   },
   instructions: {
     padding: 10,
-    paddingTop: 30, // Hack to get around the fact that React Native 0.46 doesn't support SafeAreaView
+    paddingTop: 50, // Hack to get around the fact that React Native 0.46 doesn't support SafeAreaView
     fontSize: 16,
   },
   input: {
