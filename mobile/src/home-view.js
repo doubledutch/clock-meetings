@@ -495,6 +495,7 @@ const s = StyleSheet.create({
   },
   settingsGear: {
     fontSize: 30,
+    backgroundColor: 'transparent',
   },
 })
 
