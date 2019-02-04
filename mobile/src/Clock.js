@@ -38,7 +38,8 @@ export default class Clock extends PureComponent {
       slotCount,
       primaryColor,
     } = this.props
-    const windowWidth = Dimensions.get('window').width
+    const windowDimensions = Dimensions.get('window')
+    const windowWidth = Math.min(windowDimensions.width, windowDimensions.height)
     const width = windowWidth - clockPadding * 2 - avatarSize
     const scanWidth = Math.floor((width - avatarSize) / Math.sqrt(2))
     const scanOffset = (windowWidth - scanWidth) / 2
