@@ -450,6 +450,7 @@ const s = StyleSheet.create({
   info: {
     padding: 10,
     backgroundColor: 'white',
+    zIndex: 2,
   },
   infoTitle: {
     fontSize: 14,
@@ -486,7 +487,7 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
   settingsButton: {
-    zIndex: 5,
+    zIndex: 1,
     position: 'absolute',
     top: 0,
     right: 0,
