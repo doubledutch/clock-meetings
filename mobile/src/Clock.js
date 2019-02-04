@@ -118,7 +118,7 @@ export default class Clock extends PureComponent {
                 permissionDialogMessage="Required to scan for a meeting slot"
               />
             )
-          ) : selectedIndex > -1 ? (
+          ) : selectedIndex ? (
             <Avatar size={scanWidth} user={otherUser} client={client} roundedness={0.6} />
           ) : (
             <QRCode size={scanWidth} value={JSON.stringify(currentUser.id)} />
