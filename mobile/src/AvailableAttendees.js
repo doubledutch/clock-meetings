@@ -19,7 +19,7 @@ import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { Avatar } from '@doubledutch/rn-client'
 import { plus } from './images'
 
-const getId = x => x.id
+const getAttendeeKey = x => `${x.id}-${x.firstName}-${x.lastName}`
 
 const AvailableAttendees = ({ addMeeting, attendees, viewDetails, primaryColor, slotCount }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
@@ -58,7 +58,7 @@ const AvailableAttendees = ({ addMeeting, attendees, viewDetails, primaryColor, 
     <FlatList
       data={attendees}
       renderItem={renderItem}
-      keyExtractor={getId}
+      keyExtractor={getAttendeeKey}
       ListHeaderComponent={ListHeader}
       ItemSeparatorComponent={ItemSeparator}
     />
