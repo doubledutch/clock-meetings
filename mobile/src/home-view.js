@@ -197,6 +197,7 @@ class HomeView extends PureComponent {
     const availableAttendees = Object.entries(attendeesWithTopics)
       .map(([id, attendee]) => ({
         ...attendee,
+        ...this.getCachedUser(id),
         id,
         mutuallyAvailableSlots: this.mutuallyAvailableSlotIndexes(id),
       }))
