@@ -23,7 +23,7 @@ import {
 } from '@doubledutch/firebase-connector'
 import { Avatar, TextInput } from '@doubledutch/react-components'
 import CsvParse from '@vtex/react-csv-parse'
-import { CSVLink } from 'react-csv'
+import { CSVLink } from '@doubledutch/react-csv'
 import '@doubledutch/react-components/lib/base.css'
 
 import './App.css'
