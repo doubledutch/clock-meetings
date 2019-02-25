@@ -27,10 +27,6 @@ import { openTab } from './utils'
 
 export default class Admin extends PureComponent {
   state = {
-    slotCount: null,
-    secondsBeforeMeetings: null,
-    secondsPerMeeting: null,
-    startTime: null,
     meetings: {},
     users: {},
   }
@@ -39,23 +35,11 @@ export default class Admin extends PureComponent {
     const { fbc } = this.props
 
     fbc.database.public
-      .adminRef('startTime')
-      .on('value', data => this.setState({ startTime: data.val() }))
-    fbc.database.public
       .adminRef('topics')
       .on('value', data => this.setState({ topics: data.val() || '' }))
     fbc.database.public
       .adminRef('requireIsHere')
       .on('value', data => this.setState({ requireIsHere: data.val() || false }))
-    fbc.database.public
-      .adminRef('secondsBeforeMeetings')
-      .on('value', data => this.setState({ secondsBeforeMeetings: data.val() || 120 }))
-    fbc.database.public
-      .adminRef('secondsPerMeeting')
-      .on('value', data => this.setState({ secondsPerMeeting: data.val() || 300 }))
-    fbc.database.public
-      .adminRef('slotCount')
-      .on('value', data => this.setState({ slotCount: data.val() || 12 }))
 
     mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
 
@@ -69,17 +53,8 @@ export default class Admin extends PureComponent {
   }
 
   render() {
-    const {
-      meetings,
-      requireIsHere,
-      secondsBeforeMeetings,
-      secondsPerMeeting,
-      slotCount,
-      startTime,
-      topics,
-      users,
-    } = this.state
-    if (slotCount === null) return <div>Loading...</div>
+    const { meeting, startTime, secondsBeforeMeetings, secondsPerMeeting, slotCount } = this.props
+    const { meetings, requireIsHere, topics, users } = this.state
 
     const userIsHere = id => users[id] != null && users[id].isHere
     const notHereMeetings = requireIsHere
@@ -104,6 +79,7 @@ export default class Admin extends PureComponent {
             max={12}
             value={slotCount}
             onChange={this.updatePublicNumber('slotCount')}
+            disabled={meeting.isLive}
           />
         </label>
         <label>
@@ -115,6 +91,7 @@ export default class Admin extends PureComponent {
             max={900}
             value={secondsPerMeeting}
             onChange={this.updatePublicNumber('secondsPerMeeting')}
+            disabled={meeting.isLive}
           />
         </label>
         <label>
@@ -126,6 +103,7 @@ export default class Admin extends PureComponent {
             max={900}
             value={secondsBeforeMeetings}
             onChange={this.updatePublicNumber('secondsBeforeMeetings')}
+            disabled={meeting.isLive}
           />
         </label>
         <div className="horizontal space-children">
@@ -186,7 +164,7 @@ export default class Admin extends PureComponent {
                 onClick={this.requireIsHere(true)}
                 type="button"
               >
-                Require all attendees to tap &quot;I&apos;m here&quot; first.
+                Require all attendees to tap &quot;I&apos;m here&quot; now.
               </button>
             )}
           </div>

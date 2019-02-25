@@ -24,14 +24,17 @@ export default class BigScreen extends PureComponent {
   componentDidMount() {}
 
   render() {
-    const { getServerTime } = this.props
+    const { getServerTime, meeting } = this.props
     return (
       <div className="big-screen">
-        <Timer
-          className="big-screen__timer"
-          getTime={getServerTime}
-          targetTime={new Date('2019-02-23T00:00:00')}
-        />
+        {meeting.isLive && (
+          <Timer
+            className="big-screen__timer"
+            getTime={getServerTime}
+            targetTime={meeting.endTime}
+          />
+        )}
+        <div>{JSON.stringify(meeting)}</div>
       </div>
     )
   }

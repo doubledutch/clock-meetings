@@ -30,29 +30,99 @@ const { token } = parseQueryString()
 if (token) client.longLivedToken = token
 
 class App extends PureComponent {
-  state = {}
+  state = {
+    meeting: { isLive: false },
+    startTime: null,
+    slotCount: null,
+    secondsBeforeMeetings: null,
+    secondsPerMeeting: null,
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      prevState.startTime !== this.state.startTime ||
+      prevState.slotCount !== this.state.slotCount ||
+      prevState.secondsBeforeMeetings !== this.state.secondsBeforeMeetings ||
+      prevState.secondsPerMeeting !== this.state.secondsPerMeeting
+    ) {
+      if (this.timer) clearTimeout(this.timer)
+      this.setTimer()
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.timer) clearTimeout(this.timer)
+  }
+
+  setTimer = () => {
+    const meeting = this.getMeetingState()
+    this.setState({ meeting })
+    if (meeting.isLive) setTimeout(this.setTimer, meeting.endTime - this.getServerTime())
+  }
 
   componentDidMount() {
     const { fbc } = this.props
     this.props.fbc.signinAdmin().then(() => {
       this.getServerTime = serverTimeFactory(fbc.database.private.adminRef('st'), ServerValue)
-      this.setState({ isSignedIn: true })
+
+      fbc.database.public
+        .adminRef('startTime')
+        .on('value', data => this.setState({ startTime: data.val() }))
+
+      fbc.database.public
+        .adminRef('secondsBeforeMeetings')
+        .on('value', data => this.setState({ secondsBeforeMeetings: data.val() || 120 }))
+      fbc.database.public
+        .adminRef('secondsPerMeeting')
+        .on('value', data => this.setState({ secondsPerMeeting: data.val() || 300 }))
+      fbc.database.public
+        .adminRef('slotCount')
+        .on('value', data => this.setState({ slotCount: data.val() || 12 }))
     })
   }
 
   render() {
-    const { isSignedIn } = this.state
-    if (!isSignedIn) return <div>Loading...</div>
+    const { meeting, startTime, slotCount, secondsBeforeMeetings, secondsPerMeeting } = this.state
+    if (!slotCount) return <div className="admin">Loading...</div>
 
     const { fbc } = this.props
     const qs = parseQueryString()
 
     switch (qs.page) {
       case 'bigScreen':
-        return <BigScreen fbc={fbc} getServerTime={this.getServerTime} />
+        return <BigScreen fbc={fbc} getServerTime={this.getServerTime} meeting={meeting} />
       default:
-        return <Admin fbc={fbc} />
+        return (
+          <Admin
+            fbc={fbc}
+            meeting={meeting}
+            startTime={startTime}
+            slotCount={slotCount}
+            secondsBeforeMeetings={secondsBeforeMeetings}
+            secondsPerMeeting={secondsPerMeeting}
+          />
+        )
     }
+  }
+
+  getMeetingState = () => {
+    const { startTime, slotCount, secondsBeforeMeetings, secondsPerMeeting } = this.state
+    const msBeforeMeetings = secondsBeforeMeetings * 1000
+    const msPerMeeting = secondsPerMeeting * 1000
+    const now = this.getServerTime().valueOf()
+
+    // A "round" is a break before a meeting to find your partner, plus the meeting itself.
+    const msPerRound = msBeforeMeetings + msPerMeeting
+    if (!startTime || now > startTime + slotCount * msPerRound) {
+      return { isLive: false }
+    }
+
+    const roundIndex = Math.floor((now - startTime) / msPerRound)
+    const roundStarted = startTime + roundIndex * msPerRound
+    const msSinceRoundStarted = now - roundStarted
+    const isBreak = msSinceRoundStarted < msBeforeMeetings
+    const endTime = new Date(roundStarted + msBeforeMeetings + (isBreak ? 0 : msPerMeeting))
+    return { isLive: true, roundIndex, isBreak, endTime }
   }
 }
 
