@@ -15,302 +15,43 @@
  */
 
 import React, { PureComponent } from 'react'
-
 import client from '@doubledutch/admin-client'
-import {
-  provideFirebaseConnectorToReactComponent,
-  mapPushedDataToStateObjects,
-} from '@doubledutch/firebase-connector'
-import { Avatar, TextInput } from '@doubledutch/react-components'
-import CsvParse from '@vtex/react-csv-parse'
-import { CSVLink } from '@doubledutch/react-csv'
-import '@doubledutch/react-components/lib/base.css'
+import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
+import { ServerValue } from '@firebase/database'
+import Admin from './Admin'
+import BigScreen from './BigScreen'
+import { parseQueryString } from './utils'
+import serverTimeFactory from './firebaseServerTime'
 
+import '@doubledutch/react-components/lib/base.css'
 import './App.css'
 
+const { token } = parseQueryString()
+if (token) client.longLivedToken = token
+
 class App extends PureComponent {
-  state = { slotCount: 12, currentSlotIndex: null, meetings: {}, users: {} }
+  state = {}
 
   componentDidMount() {
     const { fbc } = this.props
-    fbc.signinAdmin().then(() => {
-      fbc.database.public
-        .adminRef('slotCount')
-        .on('value', data => this.setState({ slotCount: data.val() || 12 }))
-      fbc.database.public
-        .adminRef('currentSlotIndex')
-        .on('value', data => this.setState({ currentSlotIndex: data.val() || -1 }))
-      fbc.database.public
-        .adminRef('topics')
-        .on('value', data => this.setState({ topics: data.val() || '' }))
-      fbc.database.public
-        .adminRef('requireIsHere')
-        .on('value', data => this.setState({ requireIsHere: data.val() || false }))
-
-      mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
-
-      mapPushedDataToStateObjects(fbc.database.public.usersRef(), this, 'users', key => {
-        // Trigger lookup for attendee as a side-effect, which will delete their data if not found (deleted).
-        this.getCachedUser(key)
-        return key
-      })
+    this.props.fbc.signinAdmin().then(() => {
+      this.getServerTime = serverTimeFactory(fbc.database.private.adminRef('st'), ServerValue)
+      this.setState({ isSignedIn: true })
     })
   }
 
   render() {
-    const { currentSlotIndex, meetings, requireIsHere, slotCount, topics, users } = this.state
-    if (currentSlotIndex === null) return <div>Loading...</div>
+    const { isSignedIn } = this.state
+    if (!isSignedIn) return <div>Loading...</div>
 
-    const userIsHere = id => users[id] != null && users[id].isHere
-    const notHereMeetings = requireIsHere
-      ? Object.values(meetings).filter(m => !userIsHere(m.a) || !userIsHere(m.b))
-      : []
-
-    return (
-      <div className="vertical space-children">
-        <div>
-          Host a fast networking opportunity for your attendees. Choose 3-12 slots that attendees
-          can fill (e.g. &quot;Will you be my third slot?&quot;), and optionally assign a default
-          topic to each slot. Attendees scan each other to confirm their speed-dating-style meeting.
-          Begin advancing the clock (suggested 5 minutes per slot) and watch your attendees form
-          new, meaningful connections.
-        </div>
-        <label>
-          Number of slots:
-          <input
-            className="number"
-            type="number"
-            min={3}
-            max={12}
-            value={slotCount}
-            onChange={this.updatePublicNumber('slotCount')}
-          />
-        </label>
-        {currentSlotIndex < 0 ? (
-          <div className="horizontal space-children">
-            <button className="dd-bordered" onClick={this.startOneOClock}>
-              Start the first meeting
-            </button>
-            {requireIsHere ? (
-              [
-                <button className="dd-bordered secondary" onClick={this.requireIsHere(false)}>
-                  Don&apos;t require &quot;I&apos;m here&quot;.
-                </button>,
-                notHereMeetings.length > 0 ? (
-                  <button
-                    className="dd-bordered destructive"
-                    onClick={() => this.removeMeetings(notHereMeetings)}
-                  >
-                    Remove {notHereMeetings.length} meetings of attendees who have not tapped
-                    &quot;I&apos;m here&quot;.
-                  </button>
-                ) : (
-                  <span>
-                    All attendees with meetings scheduled have tapped &quot;I&apos;m here&quot;.
-                  </span>
-                ),
-              ]
-            ) : (
-              <button className="dd-bordered secondary" onClick={this.requireIsHere(true)}>
-                Require all attendees to tap &quot;I&apos;m here&quot; first.
-              </button>
-            )}
-          </div>
-        ) : (
-          <div>
-            <label>
-              Current meeting slot:
-              <input
-                className="number"
-                type="number"
-                min={1}
-                max={slotCount}
-                value={currentSlotIndex}
-                onChange={this.updatePublicNumber('currentSlotIndex')}
-              />
-            </label>
-            <button className="dd-bordered secondary" onClick={this.endMeetings}>
-              Turn off current meeting
-            </button>
-          </div>
-        )}
-        <h2>Upload personal topics</h2>
-        <CsvParse
-          className="csv-input"
-          keys={['email', 'topic']}
-          onDataUploaded={this.handleImport}
-          onError={this.handleError}
-          render={onChange => <input type="file" onChange={onChange} />}
-        />
-        <CSVLink className="csvButton" data={this.getCSVTemplate()} filename="personal-topics.csv">
-          Download Template
-        </CSVLink>
-        <TextInput
-          multiline
-          label="Enter ordered default slot topics, one per line (optional). These are used if attendees do not have personal topics selected."
-          onChange={this.updateTopics}
-          value={topics}
-        />
-        <div className="footer">
-          <button className="dd-bordered destructive" onClick={this.clear}>
-            Clear all attendees&apos; scheduled meetings!
-          </button>
-        </div>
-        <div>{Object.keys(meetings).length} meetings booked:</div>
-        <div className="space-children vertical">
-          {Object.values(meetings).map(m => (
-            <div className="space-children horizontal" key={m.id}>
-              <button className="dd-bordered destructive" onClick={() => this.removeMeeting(m.id)}>
-                REMOVE
-              </button>
-              <Avatar user={this.getCachedUser(m.a) || {}} />
-              <Avatar user={this.getCachedUser(m.b) || {}} />
-              <span>
-                {(this.getCachedUser(m.a) || {}).firstName}{' '}
-                {(this.getCachedUser(m.a) || {}).lastName} -{' '}
-                {(this.getCachedUser(m.b) || {}).firstName}{' '}
-                {(this.getCachedUser(m.b) || {}).lastName} (slot {m.slotIndex || slotCount})
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  cachedUsers = {}
-  getCachedUser = id => {
-    let cached = this.cachedUsers[id]
-    const now = new Date().valueOf()
-
-    // Refetch attendee in the background if too old.
-    if (!cached || !cached.fetched || cached.fetched + 1000 * 60 * 60 * 12 < now) {
-      // Cache a placeholder so we don't lookup the same user multiple times
-      if (!cached) cached = { id }
-      cached.fetched = now
-      this.cachedUsers[id] = cached
-
-      const removeAttendee = () => {
-        const { fbc } = this.props
-        // Remove deleted attendee's info.
-        fbc.database.public.usersRef(id).remove()
-
-        // Remove deleted attendee's meetings.
-        Object.values(this.state.meetings)
-          .filter(m => m.a === id || m.b === id)
-          .forEach(m =>
-            fbc.database.public
-              .allRef('meetings')
-              .child(m.id)
-              .remove(),
-          )
-      }
-
-      client
-        .getAttendee(id)
-        .then(user => {
-          this.cachedUsers[id] = { ...user, fetched: now }
-          this.setState({ c: now })
-          if (!user) removeAttendee()
-        })
-        .catch(() => {
-          this.cachedUsers[id] = { fetched: now }
-          removeAttendee()
-        })
-    }
-    return cached
-  }
-
-  removeMeeting = id => {
-    if (window.confirm(`Are you sure you want to delete this booked meeting?`))
-      this.removeMeetingWithoutConfirm(id)
-  }
-
-  removeMeetings = meetings => {
-    if (
-      window.confirm(`Are you sure you want to delete these ${meetings.length} booked meetings?`)
-    ) {
-      meetings.forEach(m => this.removeMeetingWithoutConfirm(m.id))
-    }
-  }
-
-  removeMeetingWithoutConfirm = id =>
-    this.props.fbc.database.public
-      .allRef('meetings')
-      .child(id)
-      .remove()
-
-  getCSVTemplate = () => [
-    {
-      email: 'jean@valjean.com',
-      topic:
-        'Personal: What are good ways to meet friends in a new city? Professional: How do you approach a salary negotiation?',
-    },
-  ]
-
-  handleImport = data => {
     const { fbc } = this.props
-    const attendeePromises = data.map(({ email, topic }) =>
-      client
-        .getAttendees(email)
-        .then(as => (as.length ? { ...as[0], topic } : null))
-        .catch(() => null),
-    )
-    Promise.all(attendeePromises)
-      .then(topics => topics.filter(x => x && x.id && x.topic != null))
-      .then(attendeesWithTopics => {
-        const attendeeUpdates = attendeesWithTopics.reduce((obj, attendeeWithTopic) => {
-          obj[attendeeWithTopic.id] =
-            attendeeWithTopic.topic && attendeeWithTopic.topic.trim()
-              ? { ...attendeeWithTopic, id: null }
-              : null // remove attendees with no topic set.
-          return obj
-        }, {})
-        fbc.database.public.usersRef().update(attendeeUpdates)
-        let message = `Topics updated for ${attendeesWithTopics.length} attendees.`
-        if (data.length > attendeesWithTopics.length) {
-          message += ` ${data.length - attendeesWithTopics.length} attendees were not found.`
-        }
-        window.alert(message)
-      })
-  }
+    const qs = parseQueryString()
 
-  handleError = error => console.error(error)
-
-  updatePublicNumber = prop => e => {
-    this.props.fbc.database.public.adminRef(prop).set(+e.target.value)
-  }
-
-  updateTopics = e => {
-    this.props.fbc.database.public.adminRef('topics').set(e.target.value)
-  }
-
-  startOneOClock = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(1)
-  endMeetings = () => this.props.fbc.database.public.adminRef('currentSlotIndex').set(-1)
-  requireIsHere = isRequired => () => {
-    const { fbc } = this.props
-    fbc.database.public.adminRef('requireIsHere').set(isRequired)
-    if (isRequired) {
-      fbc.database.public.usersRef().once('value', data => {
-        Object.entries(data.val() || {})
-          .filter(([id, user]) => user.isHere)
-          .forEach(([id, user]) =>
-            fbc.database.public
-              .usersRef(id)
-              .child('isHere')
-              .remove(),
-          )
-      })
-    }
-  }
-
-  clear = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear ALL attendees' meetings? This cannot be undone!",
-      )
-    ) {
-      this.props.fbc.database.public.allRef('meetings').remove()
+    switch (qs.page) {
+      case 'bigScreen':
+        return <BigScreen fbc={fbc} getServerTime={this.getServerTime} />
+      default:
+        return <Admin fbc={fbc} />
     }
   }
 }

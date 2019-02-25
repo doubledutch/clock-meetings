@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,52 +14,25 @@
  * limitations under the License.
  */
 
-:root, #root {
-  font-family: sans-serif;
-  font-size: 14px;
-  height: 100%;
-}
+import React, { PureComponent } from 'react'
 
-body {
-  margin: 0;
-  padding: 0;
-}
+import Timer from './Timer'
 
-.admin {
-  margin: 0;
-  padding: 10px;
-}
+export default class BigScreen extends PureComponent {
+  state = {}
 
-label {
-  display: block;
-}
+  componentDidMount() {}
 
-input[type='number'] {
-  font-size: 32px;
-  display: inline-block;
-  margin: 0.5em;
-  padding: 0.2em;
-}
-
-.number {
-  width: 100px;
-}
-
-.footer {
-  margin: 3em 0;
-}
-
-.big-screen {
-  height: 100vh;
-  width: 100vw;
-  color: white;
-  background-color: black;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.big-screen__timer {
-  font-size: 10vh;
+  render() {
+    const { getServerTime } = this.props
+    return (
+      <div className="big-screen">
+        <Timer
+          className="big-screen__timer"
+          getTime={getServerTime}
+          targetTime={new Date('2019-02-23T00:00:00')}
+        />
+      </div>
+    )
+  }
 }
