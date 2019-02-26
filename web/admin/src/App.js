@@ -16,7 +16,10 @@
 
 import React, { PureComponent } from 'react'
 import client from '@doubledutch/admin-client'
-import { provideFirebaseConnectorToReactComponent } from '@doubledutch/firebase-connector'
+import {
+  mapPushedDataToStateObjects,
+  provideFirebaseConnectorToReactComponent,
+} from '@doubledutch/firebase-connector'
 import { ServerValue } from '@firebase/database'
 import Admin from './Admin'
 import BigScreen from './BigScreen'
@@ -32,6 +35,7 @@ if (token) client.longLivedToken = token
 class App extends PureComponent {
   state = {
     meeting: { isLive: false },
+    meetings: {},
     startTime: null,
     slotCount: null,
     secondsBeforeMeetings: null,
@@ -78,11 +82,13 @@ class App extends PureComponent {
       fbc.database.public
         .adminRef('slotCount')
         .on('value', data => this.setState({ slotCount: data.val() || 12 }))
+
+      mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
     })
   }
 
   render() {
-    const { meeting, startTime, slotCount, secondsBeforeMeetings, secondsPerMeeting } = this.state
+    const { meeting, meetings, slotCount, secondsBeforeMeetings, secondsPerMeeting } = this.state
     if (!slotCount) return <div className="admin">Loading...</div>
 
     const { fbc } = this.props
@@ -90,13 +96,21 @@ class App extends PureComponent {
 
     switch (qs.page) {
       case 'bigScreen':
-        return <BigScreen fbc={fbc} getServerTime={this.getServerTime} meeting={meeting} />
+        return (
+          <BigScreen
+            fbc={fbc}
+            getServerTime={this.getServerTime}
+            meeting={meeting}
+            meetings={meetings}
+          />
+        )
       default:
         return (
           <Admin
             fbc={fbc}
             meeting={meeting}
-            startTime={startTime}
+            meetings={meetings}
+            getServerTime={this.getServerTime}
             slotCount={slotCount}
             secondsBeforeMeetings={secondsBeforeMeetings}
             secondsPerMeeting={secondsPerMeeting}

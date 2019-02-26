@@ -23,11 +23,11 @@ import { Avatar, TextInput } from '@doubledutch/react-components'
 import CsvParse from '@vtex/react-csv-parse'
 import { CSVLink } from '@doubledutch/react-csv'
 
+import Timer from './Timer'
 import { openTab } from './utils'
 
 export default class Admin extends PureComponent {
   state = {
-    meetings: {},
     users: {},
   }
 
@@ -41,8 +41,6 @@ export default class Admin extends PureComponent {
       .adminRef('requireIsHere')
       .on('value', data => this.setState({ requireIsHere: data.val() || false }))
 
-    mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
-
     mapPushedDataToStateObjects(fbc.database.public.usersRef(), this, 'users', key => {
       // Trigger lookup for attendee as a side-effect, which will delete their data if not found (deleted).
       this.getCachedUser(key)
@@ -53,8 +51,15 @@ export default class Admin extends PureComponent {
   }
 
   render() {
-    const { meeting, startTime, secondsBeforeMeetings, secondsPerMeeting, slotCount } = this.props
-    const { meetings, requireIsHere, topics, users } = this.state
+    const {
+      getServerTime,
+      meeting,
+      meetings,
+      secondsBeforeMeetings,
+      secondsPerMeeting,
+      slotCount,
+    } = this.props
+    const { requireIsHere, topics, users } = this.state
 
     const userIsHere = id => users[id] != null && users[id].isHere
     const notHereMeetings = requireIsHere
@@ -111,9 +116,17 @@ export default class Admin extends PureComponent {
             Launch big screen
           </button>
         </div>
-        {startTime ? (
-          <div>
-            TBD: Current meeting (auto)
+        {meeting.isLive ? (
+          <div className="horizontal space-children">
+            <span role="img" aria-label="Magic Hour in progress">
+              ⏳
+            </span>
+            <div>
+              {meeting.isBreak ? 'Countdown to round' : 'Round'} {meeting.roundIndex + 1}:
+            </div>
+            <div>
+              <Timer getTime={getServerTime} targetTime={meeting.endTime} />
+            </div>
             {/* <label>
             Current meeting slot:
             <input
@@ -125,14 +138,14 @@ export default class Admin extends PureComponent {
               onChange={this.updatePublicNumber('currentSlotIndex')}
             />
           </label> */}
-            <button className="dd-bordered secondary" onClick={this.endMeetings} type="button">
-              Turn off current meeting
+            <button className="dd-bordered destructive" onClick={this.endMeetings} type="button">
+              Stop Magic Hour
             </button>
           </div>
         ) : (
           <div className="horizontal space-children">
             <button className="dd-bordered" onClick={this.startOneOClock} type="button">
-              Start the first meeting
+              Start Magic Hour
             </button>
             {requireIsHere ? (
               [
@@ -236,7 +249,7 @@ export default class Admin extends PureComponent {
         fbc.database.public.usersRef(id).remove()
 
         // Remove deleted attendee's meetings.
-        Object.values(this.state.meetings)
+        Object.values(this.props.meetings)
           .filter(m => m.a === id || m.b === id)
           .forEach(m =>
             fbc.database.public
@@ -328,7 +341,15 @@ export default class Admin extends PureComponent {
   startOneOClock = () =>
     this.props.fbc.database.public.adminRef('startTime').set(ServerValue.TIMESTAMP)
 
-  endMeetings = () => this.props.fbc.database.public.adminRef('startTime').remove()
+  endMeetings = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to STOP Magic Hour? You'll only be able to restart from the beginning",
+      )
+    ) {
+      this.props.fbc.database.public.adminRef('startTime').remove()
+    }
+  }
 
   requireIsHere = isRequired => () => {
     const { fbc } = this.props
@@ -336,8 +357,8 @@ export default class Admin extends PureComponent {
     if (isRequired) {
       fbc.database.public.usersRef().once('value', data => {
         Object.entries(data.val() || {})
-          .filter(([id, user]) => user.isHere)
-          .forEach(([id, user]) =>
+          .filter(([, user]) => user.isHere)
+          .forEach(([id]) =>
             fbc.database.public
               .usersRef(id)
               .child('isHere')

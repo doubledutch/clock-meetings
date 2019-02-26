@@ -66,4 +66,17 @@ input[type='number'] {
 
 .big-screen__timer {
   font-size: 10vh;
+  margin-bottom: 2vh;
+}
+
+.big-screen__round {
+  font-size: 5vh;
+  margin-bottom: 2vh;
+}
+
+.big-screen__start {
+  color: gray;
+  position: absolute;
+  bottom: 1vh;
+  right: 1vh;
 }

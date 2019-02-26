@@ -21,7 +21,7 @@ const formatDifference = milliseconds => {
   const seconds = Math.floor((abs / 1000) % 60)
 
   const hoursText = hours ? `${hours}:` : ''
-  const minutesText = `${hours && minutes < 10 ? '0' : '' }${minutes}:`
+  const minutesText = `${hours && minutes < 10 ? '0' : ''}${minutes}:`
   const secondsText = `${seconds < 10 ? '0' : ''}${seconds}`
   return hoursText + minutesText + secondsText
 }

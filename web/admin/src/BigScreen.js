@@ -24,17 +24,31 @@ export default class BigScreen extends PureComponent {
   componentDidMount() {}
 
   render() {
-    const { getServerTime, meeting } = this.props
+    const { getServerTime, meeting, meetings } = this.props
+    if (!meeting.isLive) {
+      return (
+        <div className="big-screen">
+          {this.wasLive ? (
+            <div className="big-screen__timer">0:00</div>
+          ) : (
+            <div className="big-screen__start">Start Magic Hour from the CMS</div>
+          )}
+        </div>
+      )
+    }
+
+    this.wasLive = true
+    const meetingsThisRound = Object.values(meetings).filter(
+      m => m.slotIndex === meeting.roundIndex,
+    )
+
     return (
       <div className="big-screen">
-        {meeting.isLive && (
-          <Timer
-            className="big-screen__timer"
-            getTime={getServerTime}
-            targetTime={meeting.endTime}
-          />
-        )}
-        <div>{JSON.stringify(meeting)}</div>
+        <Timer className="big-screen__timer" getTime={getServerTime} targetTime={meeting.endTime} />
+        <div className="big-screen__round">
+          {meeting.isBreak ? 'Find your partner for ' : ''}Round {meeting.roundIndex + 1}
+        </div>
+        <div>{meetingsThisRound.length} meetings this round</div>
       </div>
     )
   }
