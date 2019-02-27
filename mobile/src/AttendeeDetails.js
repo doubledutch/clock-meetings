@@ -31,7 +31,6 @@ const AttendeeDetails = ({
   primaryColor,
   removeMeeting,
   style,
-  topic,
   user,
 }) => {
   if (!user) return null
@@ -63,7 +62,7 @@ const AttendeeDetails = ({
           </View>
           <View>
             <Text style={s.header}>Topic:</Text>
-            <Text style={s.topic}>{topic}</Text>
+            <Text style={s.topic}>{user.topic}</Text>
           </View>
         </View>
         {user.mutuallyAvailableSlots != null && user.mutuallyAvailableSlots.length > 0 && (

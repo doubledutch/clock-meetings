@@ -100,7 +100,7 @@ export default class Admin extends PureComponent {
           />
         </label>
         <label>
-          Seconds before meetings:
+          Seconds before each meeting:
           <input
             className="number"
             type="number"
