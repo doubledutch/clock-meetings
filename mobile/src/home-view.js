@@ -279,6 +279,7 @@ class HomeView extends PureComponent {
           meeting={meeting}
           meetings={meetings}
           topics={topicsForMeeting(currentMeeting)}
+          defaultTopic={topics && topics[meeting.roundIndex]}
           slotCount={slotCount}
           currentUser={currentUser}
           primaryColor={primaryColor}

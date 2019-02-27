@@ -23,7 +23,7 @@ import { Avatar, Color } from '@doubledutch/rn-client'
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
 function sortMeetings(m1, m2) {
-  const mKey = m => `${[m.a, m.b].sort().split('_')}`
+  const mKey = m => `${[m.a, m.b].sort().join('_')}`
   const m1Key = mKey(m1)
   const m2Key = mKey(m2)
   if (m1Key < m2Key) return -1
@@ -38,6 +38,7 @@ export default class LiveMeeting extends PureComponent {
     const {
       allMeetings,
       currentMeeting,
+      defaultTopic,
       getCachedUser,
       getServerTime,
       meeting,
@@ -67,6 +68,8 @@ export default class LiveMeeting extends PureComponent {
 
     const otherUser = getCachedUser(currentMeetingUserId) || {}
 
+    // If every attendee has the same list of all the meetings, and they all sort in the same
+    // way, then numbers and colors will match.
     const meetingsThisRound = Object.values(allMeetings)
       .filter(m => m.slotIndex === meeting.roundIndex)
       .sort(sortMeetings)
@@ -98,13 +101,28 @@ export default class LiveMeeting extends PureComponent {
             <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
           )}
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
-          <View style={s.topics}>
-            {topics.map(t => (
-              <Text style={s.topic} key={t}>
-                {t}
-              </Text>
+          {!meeting.isBreak &&
+            (topics.length > 0 ? (
+              <View style={s.topics}>
+                <Text style={s.instructions}>Your topics:</Text>
+                {topics.map(t => (
+                  <Text style={s.topic} key={t}>
+                    {t}
+                  </Text>
+                ))}
+              </View>
+            ) : (
+              !!defaultTopic && (
+                <View style={s.topics}>
+                  <Text style={s.instructions}>Your topics:</Text>
+                  {topics.map(t => (
+                    <Text style={s.topic} key={t}>
+                      {t}
+                    </Text>
+                  ))}
+                </View>
+              )
             ))}
-          </View>
         </SafeAreaView>
       </ScrollView>
     )
@@ -145,6 +163,7 @@ const s = StyleSheet.create({
   },
   number: {
     fontSize: 100,
+    fontWeight: 'bold',
     color: 'white',
     textAlign: 'center',
     marginVertical: 15,
