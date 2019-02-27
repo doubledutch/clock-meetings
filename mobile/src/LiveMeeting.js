@@ -15,15 +15,12 @@
  */
 
 import React, { PureComponent } from 'react'
-import { SafeAreaView as SAV, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView as SAV, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Timer from './Timer'
-import { stableIndexForMeetingInSlotIndex } from './meetings'
 
-import client, { Avatar, Color } from '@doubledutch/rn-client'
+import { Avatar, Color } from '@doubledutch/rn-client'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
-
-const avatarSize = 50
 
 function sortMeetings(m1, m2) {
   const mKey = m => `${[m.a, m.b].sort().split('_')}`
@@ -46,6 +43,7 @@ export default class LiveMeeting extends PureComponent {
       meeting,
       meetings,
       slotCount,
+      topics,
     } = this.props
 
     const currentMeetingUserId = meetings[meeting.roundIndex % slotCount]
@@ -80,7 +78,7 @@ export default class LiveMeeting extends PureComponent {
     }
 
     return (
-      <View style={[s.outer, background]}>
+      <ScrollView style={[s.outer, background]}>
         <SafeAreaView style={s.inner}>
           <Text style={s.number}>{orderIndex + 1}</Text>
           <Avatar user={otherUser} size={150} roundedness={0.6} />
@@ -100,8 +98,15 @@ export default class LiveMeeting extends PureComponent {
             <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
           )}
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
+          <View style={s.topics}>
+            {topics.map(t => (
+              <Text style={s.topic} key={t}>
+                {t}
+              </Text>
+            ))}
+          </View>
         </SafeAreaView>
-      </View>
+      </ScrollView>
     )
   }
 }
@@ -143,5 +148,13 @@ const s = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     marginVertical: 15,
+  },
+  topics: {
+    marginHorizontal: 10,
+  },
+  topic: {
+    fontSize: 14,
+    marginVertical: 5,
+    color: 'white',
   },
 })

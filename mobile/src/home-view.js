@@ -257,10 +257,11 @@ class HomeView extends PureComponent {
 
     const me = attendeesWithTopics[currentUser.id] || {}
     const title = suggestedTitle || 'MagicHour'
-    const topicForMeeting = m => {
+    const topicsForMeeting = m => {
+      if (!m) return []
       const a = attendeesWithTopics[m.a]
       const b = attendeesWithTopics[m.b]
-      return `${[(a && a.topic) || '', (b && b.topic) || ''].join('   |   ')}`
+      return [a && a.topic, b && b.topic].filter(x => x)
     }
 
     const renderContent = () =>
@@ -277,6 +278,7 @@ class HomeView extends PureComponent {
           currentMeeting={currentMeeting}
           meeting={meeting}
           meetings={meetings}
+          topics={topicsForMeeting(currentMeeting)}
           slotCount={slotCount}
           currentUser={currentUser}
           primaryColor={primaryColor}
