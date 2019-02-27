@@ -294,6 +294,7 @@ class HomeView extends PureComponent {
               attendees={selectedAttendees}
               viewDetails={this.viewAttendeeDetails}
               primaryColor={primaryColor}
+              otherData={this.state.c}
             />
           )}
           {attendeesToList.length > 0 && (
@@ -304,6 +305,7 @@ class HomeView extends PureComponent {
               primaryColor={primaryColor}
               slotCount={slotCount}
               secondsPerMeeting={secondsPerMeeting}
+              otherData={this.state.c}
             />
           )}
           <SettingsButton onPress={this.showSettings} />

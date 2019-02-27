@@ -20,7 +20,7 @@ import { Avatar } from '@doubledutch/rn-client'
 
 const getAttendeeKey = x => `${x.id}-${x.firstName}-${x.lastName}`
 
-const PlannedMeetings = ({ attendees, viewDetails, primaryColor }) => {
+const PlannedMeetings = ({ attendees, otherData, primaryColor, viewDetails }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
 
   const renderItem = ({ item }) => (
@@ -53,6 +53,7 @@ const PlannedMeetings = ({ attendees, viewDetails, primaryColor }) => {
         renderItem={renderItem}
         keyExtractor={getAttendeeKey}
         ItemSeparatorComponent={ItemSeparator}
+        otherData={otherData}
       />
     </View>
   )
