@@ -297,7 +297,7 @@ class HomeView extends PureComponent {
         />
       ) : (
         attendeesToList.length > 0 && (
-          <ScrollView>
+          <View style={s.container}>
             <AvailableAttendees
               attendees={attendeesToList}
               viewDetails={this.viewAttendeeDetails}
@@ -306,7 +306,7 @@ class HomeView extends PureComponent {
               slotCount={slotCount}
             />
             <SettingsButton onPress={this.showSettings} />
-          </ScrollView>
+          </View>
         )
       )
     // {meeting.isLive &&
@@ -495,18 +495,6 @@ const s = StyleSheet.create({
     padding: 10,
     backgroundColor: 'white',
     zIndex: 2,
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontStyle: 'italic',
-    color: 'gray',
-  },
-  name: {
-    marginTop: 5,
-    fontSize: 20,
-  },
-  title: {
-    fontSize: 16,
   },
   modalMain: {
     flex: 1,

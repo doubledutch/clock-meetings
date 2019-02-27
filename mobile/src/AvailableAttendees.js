@@ -55,13 +55,15 @@ const AvailableAttendees = ({ addMeeting, attendees, viewDetails, primaryColor, 
   )
 
   return (
-    <FlatList
-      data={attendees}
-      renderItem={renderItem}
-      keyExtractor={getAttendeeKey}
-      ListHeaderComponent={ListHeader}
-      ItemSeparatorComponent={ItemSeparator}
-    />
+    <View style={s.container}>
+      <ListHeader />
+      <FlatList
+        data={attendees}
+        renderItem={renderItem}
+        keyExtractor={getAttendeeKey}
+        ItemSeparatorComponent={ItemSeparator}
+      />
+    </View>
   )
 }
 
@@ -70,11 +72,14 @@ export default AvailableAttendees
 const ItemSeparator = () => <View style={s.separator} />
 
 const s = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   listHeader: {
     backgroundColor: 'white',
     borderBottomWidth: 2,
     borderColor: '#d9d9d9',
-    paddingVertical: 7,
+    paddingVertical: 25,
     paddingHorizontal: 15,
   },
   listHeaderText: {
