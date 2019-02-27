@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import React, { PureComponent } from 'react'
-import sharedTimer from './shared/SharedTimer'
+function sortMeetings(m1, m2) {
+  const mKey = m => `${[m.a, m.b].sort().split('_')}`
+  const m1Key = mKey(m1)
+  const m2Key = mKey(m2)
+  if (m1Key < m2Key) return -1
+  if (m1Key > m2Key) return 1
+  return 0
+}
 
-const SharedTimer = sharedTimer(PureComponent)
-
-export default props => (
-  <span className={props.className}>
-    <SharedTimer {...props} />
-  </span>
-)
+export function stableIndexForMeetingInSlotIndex(meeting, meetingList) {
+  const arr = meetings.sort(sortMeetings)
+  return arr.indexOf(meeting)
+}

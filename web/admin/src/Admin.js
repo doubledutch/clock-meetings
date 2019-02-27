@@ -104,7 +104,7 @@ export default class Admin extends PureComponent {
           <input
             className="number"
             type="number"
-            min={30}
+            min={0}
             max={900}
             value={secondsBeforeMeetings}
             onChange={this.updatePublicNumber('secondsBeforeMeetings')}
@@ -153,6 +153,7 @@ export default class Admin extends PureComponent {
                   className="dd-bordered secondary"
                   onClick={this.requireIsHere(false)}
                   type="button"
+                  key="require"
                 >
                   Don&apos;t require &quot;I&apos;m here&quot;.
                 </button>,
@@ -161,12 +162,13 @@ export default class Admin extends PureComponent {
                     className="dd-bordered destructive"
                     onClick={() => this.removeMeetings(notHereMeetings)}
                     type="button"
+                    key="remove"
                   >
                     Remove {notHereMeetings.length} meetings of attendees who have not tapped
                     &quot;I&apos;m here&quot;.
                   </button>
                 ) : (
-                  <span>
+                  <span key="info">
                     All attendees with meetings scheduled have tapped &quot;I&apos;m here&quot;.
                   </span>
                 ),
@@ -221,7 +223,7 @@ export default class Admin extends PureComponent {
                 {(this.getCachedUser(m.a) || {}).firstName}{' '}
                 {(this.getCachedUser(m.a) || {}).lastName} -{' '}
                 {(this.getCachedUser(m.b) || {}).firstName}{' '}
-                {(this.getCachedUser(m.b) || {}).lastName} (slot {m.slotIndex || slotCount})
+                {(this.getCachedUser(m.b) || {}).lastName} (slot {m.slotIndex + 1})
               </span>
             </div>
           ))}

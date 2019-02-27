@@ -15,12 +15,13 @@
  */
 
 import React, { PureComponent } from 'react'
+import { Text } from 'react-native'
 import sharedTimer from './shared/SharedTimer'
 
 const SharedTimer = sharedTimer(PureComponent)
 
 export default props => (
-  <span className={props.className}>
+  <Text style={props.style}>
     <SharedTimer {...props} />
-  </span>
+  </Text>
 )

@@ -24,7 +24,8 @@ import { ServerValue } from '@firebase/database'
 import Admin from './Admin'
 import BigScreen from './BigScreen'
 import { parseQueryString } from './utils'
-import serverTimeFactory from './firebaseServerTime'
+import serverTimeFactory from './shared/firebaseServerTime'
+import getMeetingState from './shared/getMeetingState'
 
 import '@doubledutch/react-components/lib/base.css'
 import './App.css'
@@ -42,7 +43,7 @@ class App extends PureComponent {
     secondsPerMeeting: null,
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_, prevState) {
     if (
       prevState.startTime !== this.state.startTime ||
       prevState.slotCount !== this.state.slotCount ||
@@ -59,7 +60,7 @@ class App extends PureComponent {
   }
 
   setTimer = () => {
-    const meeting = this.getMeetingState()
+    const meeting = getMeetingState(this.getServerTime, this.state)
     this.setState({ meeting })
     if (meeting.isLive) setTimeout(this.setTimer, meeting.endTime - this.getServerTime())
   }

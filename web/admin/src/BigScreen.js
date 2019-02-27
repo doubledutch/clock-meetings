@@ -43,7 +43,7 @@ export default class BigScreen extends PureComponent {
     )
 
     return (
-      <div className="big-screen">
+      <div className={`big-screen${meeting.isBreak ? ' break' : ''}`}>
         <Timer className="big-screen__timer" getTime={getServerTime} targetTime={meeting.endTime} />
         <div className="big-screen__round">
           {meeting.isBreak ? 'Find your partner for ' : ''}Round {meeting.roundIndex + 1}
