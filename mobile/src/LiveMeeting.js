@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { PureComponent } from 'react'
+import React from 'react'
 import { SafeAreaView as SAV, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Timer from './Timer'
 
@@ -33,76 +33,82 @@ function sortMeetings(m1, m2) {
 
 const rainbowColor = x => new Color({ h: -x, s: 1, v: 0.8 }).rgbString()
 
-export default class LiveMeeting extends PureComponent {
-  render() {
-    const {
-      allMeetings,
-      currentMeeting,
-      defaultTopic,
-      getCachedUser,
-      getServerTime,
-      meeting,
-      meetings,
-      slotCount,
-      topics,
-    } = this.props
-
-    const currentMeetingUserId = meetings[meeting.roundIndex % slotCount]
-    if (!currentMeetingUserId) {
-      return (
-        <View style={s.outer}>
-          <SafeAreaView style={s.inner}>
-            {meeting.isBreak ? (
-              <Text style={s.round}>Break</Text>
-            ) : (
-              <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
-            )}
-
-            <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
-            <Text style={s.instructions}>Take a break!</Text>
-            <Text style={s.instructions}>You have nothing scheduled this round.</Text>
-          </SafeAreaView>
-        </View>
-      )
-    }
-
-    const otherUser = getCachedUser(currentMeetingUserId) || {}
-
-    // If every attendee has the same list of all the meetings, and they all sort in the same
-    // way, then numbers and colors will match.
-    const meetingsThisRound = Object.values(allMeetings)
-      .filter(m => m.slotIndex === meeting.roundIndex)
-      .sort(sortMeetings)
-
-    const orderIndex = meetingsThisRound.indexOf(currentMeeting)
-
-    const background = {
-      backgroundColor: rainbowColor(orderIndex / meetingsThisRound.length),
-    }
-
+export default ({
+  allMeetings,
+  currentMeeting,
+  defaultTopic,
+  getCachedUser,
+  getServerTime,
+  meeting,
+  meetings,
+  topics,
+}) => {
+  const currentMeetingUserId = meetings[meeting.roundIndex]
+  if (!currentMeetingUserId) {
     return (
-      <ScrollView style={[s.outer, background]}>
+      <View style={s.outer}>
         <SafeAreaView style={s.inner}>
-          <Text style={s.number}>{orderIndex + 1}</Text>
-          <Avatar user={otherUser} size={150} roundedness={0.6} />
-          <Text style={s.name} key="name">
-            {otherUser.firstName} {otherUser.lastName}
-          </Text>
           {meeting.isBreak ? (
-            [
-              <Text style={s.instructions} key="find">
-                Find {otherUser.firstName} for the upcoming round.
-              </Text>,
-              <Text style={s.instructions} key="same">
-                Their screen will have the same color and number.
-              </Text>,
-            ]
+            <Text style={s.round}>Break</Text>
           ) : (
             <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
           )}
+
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
-          {!meeting.isBreak &&
-            (topics.length > 0 ? (
+          <Text style={s.instructions}>Take a break!</Text>
+          <Text style={s.instructions}>You have nothing scheduled this round.</Text>
+        </SafeAreaView>
+      </View>
+    )
+  }
+
+  const otherUser = getCachedUser(currentMeetingUserId) || {}
+
+  // If every attendee has the same list of all the meetings, and they all sort in the same
+  // way, then numbers and colors will match.
+  const meetingsThisRound = allMeetings
+    .filter(m => m.slotIndex === meeting.roundIndex)
+    .sort(sortMeetings)
+
+  const orderIndex = meetingsThisRound.indexOf(currentMeeting)
+
+  const background = {
+    backgroundColor: rainbowColor(orderIndex / meetingsThisRound.length),
+  }
+
+  return (
+    <ScrollView style={[s.outer, background]}>
+      <SafeAreaView style={s.inner}>
+        <Text style={s.number}>{orderIndex + 1}</Text>
+        <Avatar user={otherUser} size={150} roundedness={0.6} />
+        <Text style={s.name} key="name">
+          {otherUser.firstName} {otherUser.lastName}
+        </Text>
+        {meeting.isBreak ? (
+          [
+            <Text style={s.instructions} key="find">
+              Find {otherUser.firstName} for the upcoming round.
+            </Text>,
+            <Text style={s.instructions} key="same">
+              Their screen will have the same color and number.
+            </Text>,
+          ]
+        ) : (
+          <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
+        )}
+        <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
+        {!meeting.isBreak &&
+          (topics.length > 0 ? (
+            <View style={s.topics}>
+              <Text style={s.instructions}>Your topics:</Text>
+              {topics.map(t => (
+                <Text style={s.topic} key={t}>
+                  {t}
+                </Text>
+              ))}
+            </View>
+          ) : (
+            !!defaultTopic && (
               <View style={s.topics}>
                 <Text style={s.instructions}>Your topics:</Text>
                 {topics.map(t => (
@@ -111,22 +117,11 @@ export default class LiveMeeting extends PureComponent {
                   </Text>
                 ))}
               </View>
-            ) : (
-              !!defaultTopic && (
-                <View style={s.topics}>
-                  <Text style={s.instructions}>Your topics:</Text>
-                  {topics.map(t => (
-                    <Text style={s.topic} key={t}>
-                      {t}
-                    </Text>
-                  ))}
-                </View>
-              )
-            ))}
-        </SafeAreaView>
-      </ScrollView>
-    )
-  }
+            )
+          ))}
+      </SafeAreaView>
+    </ScrollView>
+  )
 }
 
 const s = StyleSheet.create({

@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-import React, { PureComponent } from 'react'
-import sharedTimer from './shared/SharedTimer'
-
-const SharedTimer = sharedTimer(PureComponent)
+import React from 'react'
+import SharedTimer from '@doubledutch/react-timer'
 
 export default props => (
-  <span className={props.className}>
-    <SharedTimer {...props} />
-  </span>
+  <SharedTimer {...props} Wrapper="span" wrapperProps={{ className: props.className }} />
 )

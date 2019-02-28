@@ -28,7 +28,7 @@ export default function getMeetingState(
     return { isLive: false }
   }
 
-  const roundIndex = Math.floor((now - startTime) / msPerRound)
+  const roundIndex = Math.max(0, Math.floor((now - startTime) / msPerRound))
   const roundStarted = startTime + roundIndex * msPerRound
   const msSinceRoundStarted = now - roundStarted
   const isBreak = msSinceRoundStarted < msBeforeMeetings

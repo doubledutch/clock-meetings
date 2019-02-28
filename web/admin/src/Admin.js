@@ -127,24 +127,13 @@ export default class Admin extends PureComponent {
             <div>
               <Timer getTime={getServerTime} targetTime={meeting.endTime} />
             </div>
-            {/* <label>
-            Current meeting slot:
-            <input
-              className="number"
-              type="number"
-              min={1}
-              max={slotCount}
-              value={currentSlotIndex}
-              onChange={this.updatePublicNumber('currentSlotIndex')}
-            />
-          </label> */}
             <button className="dd-bordered destructive" onClick={this.endMeetings} type="button">
               Stop Magic Hour
             </button>
           </div>
         ) : (
           <div className="horizontal space-children">
-            <button className="dd-bordered" onClick={this.startOneOClock} type="button">
+            <button className="dd-bordered" onClick={this.startMeetings} type="button">
               Start Magic Hour
             </button>
             {requireIsHere ? (
@@ -340,7 +329,7 @@ export default class Admin extends PureComponent {
     this.props.fbc.database.public.adminRef('topics').set(e.target.value)
   }
 
-  startOneOClock = () =>
+  startMeetings = () =>
     this.props.fbc.database.public.adminRef('startTime').set(ServerValue.TIMESTAMP)
 
   endMeetings = () => {

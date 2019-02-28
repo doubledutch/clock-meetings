@@ -795,6 +795,11 @@
   resolved "https://registry.yarnpkg.com/@doubledutch/react-csv/-/react-csv-1.1.0.tgz#b608f950d0a8f8968102aa74d0fc667ea84a16c1"
   integrity sha512-OeyUbMT/uabYsR/9fyKy7k75FJqi3c8Ne5hkn1kLELlWKbPaEVV27hbTxHeZKrtijBmrxJtl5EKt5fqz6nHLXg==
 
+"@doubledutch/react-timer@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@doubledutch/react-timer/-/react-timer-0.0.2.tgz#5bb80e2feb17b51dd25b6841821a5eeafb226d8e"
+  integrity sha512-CIb37BxLAfEreMspDsc91Nk1KB2ILXem812GJnllZjp34ljlfYMvbhWQ+TbZm0kcdj2d+2k5TPmnMAyJBmjg7g==
+
 "@firebase/app-types@0.3.4":
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.3.4.tgz#ea0b9d23c93efb139a90247bf7361b774eb80aeb"

@@ -16,7 +16,6 @@
 
 import React, { PureComponent } from 'react'
 import {
-  Alert,
   AsyncStorage,
   Button,
   Modal,
@@ -62,7 +61,7 @@ class HomeView extends PureComponent {
     allMeetings: [],
     attendeesWithTopics: {},
     meeting: { isLive: false },
-    meetings: {},
+    meetings: [],
     showSettings: false,
     startTime: null,
     slotCount: null,
@@ -124,7 +123,7 @@ class HomeView extends PureComponent {
           if (meeting.a === currentUser.id || meeting.b === currentUser.id) {
             const otherId = meeting.a === currentUser.id ? meeting.b : meeting.a
             this.setState(({ meetings }) => ({
-              meetings: { ...meetings, [meeting.slotIndex]: otherId },
+              meetings: setArrayAt(meetings.slice(), meeting.slotIndex, otherId),
             }))
           }
         })
@@ -140,7 +139,7 @@ class HomeView extends PureComponent {
           }))
           if (meeting.a === currentUser.id || meeting.b === currentUser.id) {
             this.setState(({ meetings }) => ({
-              meetings: { ...meetings, [meeting.slotIndex]: null },
+              meetings: setArrayAt(meetings.slice(), meeting.slotIndex, null),
             }))
           }
         })
@@ -228,7 +227,7 @@ class HomeView extends PureComponent {
               (m.b === currentUser.id && m.a === userId),
           )
 
-    const currentMeetingUserId = meeting.isLive ? meetings[meeting.roundIndex % slotCount] : null
+    const currentMeetingUserId = meeting.isLive ? meetings[meeting.roundIndex] : null
     const currentMeeting = meetingWith(currentMeetingUserId)
 
     const availableAttendees = Object.entries(attendeesWithTopics)
@@ -276,16 +275,12 @@ class HomeView extends PureComponent {
         <LiveMeeting
           allMeetings={allMeetings}
           currentMeeting={currentMeeting}
+          defaultTopic={topics && topics[meeting.roundIndex]}
+          getCachedUser={this.getCachedUser}
+          getServerTime={this.getServerTime}
           meeting={meeting}
           meetings={meetings}
           topics={topicsForMeeting(currentMeeting)}
-          defaultTopic={topics && topics[meeting.roundIndex]}
-          slotCount={slotCount}
-          currentUser={currentUser}
-          primaryColor={primaryColor}
-          getCachedUser={this.getCachedUser}
-          getServerTime={this.getServerTime}
-          otherData={this.state.c}
         />
       ) : (
         <View style={s.container}>
@@ -311,25 +306,6 @@ class HomeView extends PureComponent {
           <SettingsButton onPress={this.showSettings} />
         </View>
       )
-    // {meeting.isLive &&
-    //   (otherUser ? (
-    //     <View style={s.info}>
-    //       <Text style={s.infoTitle}>
-    //         Current meeting:{' '}
-    //         {(currentMeeting && topicForMeeting(currentMeeting)) ||
-    //           topics[meeting.roundIndex % slotCount || slotCount]}
-    //       </Text>
-    //       <Text style={s.name}>
-    //         {otherUser.firstName} {otherUser.lastName}
-    //       </Text>
-    //       <Text style={s.title}>{otherUser.title}</Text>
-    //       <Text style={s.title}>{otherUser.company}</Text>
-    //     </View>
-    //   ) : (
-    //     <View style={s.info}>
-    //       <Text style={s.infoTitle}>No meeting currently</Text>
-    //     </View>
-    //   ))}
 
     const helpTexts = [
       `Magic Hour is a live, face-to-face speed-networking experience designed to get rid of small talk and make sure everyone walks away with at least ${slotCount} new friends`,
@@ -501,3 +477,8 @@ export default provideFirebaseConnectorToReactComponent(
   (props, fbc) => <HomeView {...props} fbc={fbc} />,
   PureComponent,
 )
+
+function setArrayAt(arr, index, value) {
+  arr[index] = value
+  return arr
+}

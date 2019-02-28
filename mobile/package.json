@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@doubledutch/firebase-connector": "^4.1.2",
+    "@doubledutch/react-timer": "^0.0.2",
     "@doubledutch/rn-client": "5.0.1-alpha",
     "lodash.debounce": "^4.0.8",
     "react": "16.6.1",

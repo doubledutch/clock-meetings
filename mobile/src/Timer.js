@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import React, { PureComponent } from 'react'
+import React from 'react'
 import { Text } from 'react-native'
-import sharedTimer from './shared/SharedTimer'
-
-const SharedTimer = sharedTimer(PureComponent)
+import SharedTimer from '@doubledutch/react-timer'
 
 export default props => (
-  <Text style={props.style}>
-    <SharedTimer {...props} />
-  </Text>
+  <SharedTimer {...props} Wrapper={Text} wrapperProps={{ style: props.style }} />
 )
