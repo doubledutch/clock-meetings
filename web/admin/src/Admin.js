@@ -297,7 +297,11 @@ export default class Admin extends PureComponent {
     const attendeePromises = data.map(({ email, topic }) =>
       client
         .getAttendees(email)
-        .then(as => (as.length ? { ...as[0], topic } : null))
+        .then(as => {
+          if (!as.length) return null
+          const { firstName, lastName, title, company, image } = as[0]
+          return { firstName, lastName, title, company, image, topic }
+        })
         .catch(() => null),
     )
     Promise.all(attendeePromises)

@@ -28,7 +28,7 @@ const AvailableAttendees = ({
   primaryColor,
   slotCount,
   secondsPerMeeting,
-  otherData,
+  extraData,
 }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
 
@@ -71,7 +71,7 @@ const AvailableAttendees = ({
         renderItem={renderItem}
         keyExtractor={getAttendeeKey}
         ItemSeparatorComponent={ItemSeparator}
-        otherData={otherData}
+        extraData={extraData}
       />
     </View>
   )
