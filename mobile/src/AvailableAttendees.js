@@ -54,7 +54,7 @@ const AvailableAttendees = ({
 
   const ListHeader = () => (
     <View style={s.listHeader}>
-      <Text style={s.listHeaderText}>Choose More Networking Partners</Text>
+      <Text style={s.listHeaderText}>Available Networking Partners</Text>
       <Text style={s.listHeaderDescText}>
         Choose {remainingSlotCount} more partner{remainingSlotCount > 1 ? 's' : ''} to chat with at
         the event.
