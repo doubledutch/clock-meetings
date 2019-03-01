@@ -289,6 +289,7 @@ class HomeView extends PureComponent {
               attendees={selectedAttendees}
               viewDetails={this.viewAttendeeDetails}
               primaryColor={primaryColor}
+              slotCount={slotCount}
               extraData={this.state.c}
             />
           )}
@@ -298,8 +299,7 @@ class HomeView extends PureComponent {
               viewDetails={this.viewAttendeeDetails}
               addMeeting={this.addMeeting}
               primaryColor={primaryColor}
-              slotCount={slotCount}
-              secondsPerMeeting={secondsPerMeeting}
+              remainingSlotCount={slotCount - selectedAttendees.length}
               extraData={this.state.c}
             />
           )}
@@ -401,14 +401,19 @@ class HomeView extends PureComponent {
     const now = new Date().valueOf()
 
     // Refetch attendee in the background if too old.
-    if (!cached || !cached.fetched || cached.fetched + 1000 * 60 * 60 * 12 < now) {
+    if (
+      !cached ||
+      !cached.fetched ||
+      (cached.fetched + 1000 * 15 < now && !cached.found) ||
+      cached.fetched + 1000 * 60 * 60 * 12 < now
+    ) {
       // Cache a placeholder so we don't lookup the same user multiple times
       if (!cached) cached = { id }
       cached.fetched = now
       this.cachedUsers[id] = cached
 
       client.getAttendee(id).then(user => {
-        this.cachedUsers[id] = { ...user, fetched: now }
+        this.cachedUsers[id] = { ...user, found: true, fetched: now }
         this.setState({ c: now })
         this.persistCachedUsers()
       })
@@ -430,11 +435,6 @@ const s = StyleSheet.create({
   },
   main: {
     flex: 1,
-  },
-  info: {
-    padding: 10,
-    backgroundColor: 'white',
-    zIndex: 2,
   },
   modalMain: {
     flex: 1,

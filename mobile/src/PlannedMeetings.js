@@ -20,7 +20,7 @@ import { Avatar } from '@doubledutch/rn-client'
 
 const getAttendeeKey = x => `${x.id}-${x.firstName}-${x.lastName}`
 
-const PlannedMeetings = ({ attendees, extraData, primaryColor, viewDetails }) => {
+const PlannedMeetings = ({ attendees, extraData, primaryColor, slotCount, viewDetails }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
 
   const renderItem = ({ item }) => (
@@ -41,7 +41,9 @@ const PlannedMeetings = ({ attendees, extraData, primaryColor, viewDetails }) =>
   const ListHeader = () => (
     <View style={s.listHeader}>
       <Text style={s.listHeaderText}>Networking Partners</Text>
-      <Text style={s.listHeaderDescText}>{attendees.length} chosen so far</Text>
+      <Text style={s.listHeaderDescText}>
+        {attendees.length} out of {slotCount} chosen so far
+      </Text>
     </View>
   )
 

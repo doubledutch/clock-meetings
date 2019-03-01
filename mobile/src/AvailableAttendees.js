@@ -26,8 +26,7 @@ const AvailableAttendees = ({
   attendees,
   viewDetails,
   primaryColor,
-  slotCount,
-  secondsPerMeeting,
+  remainingSlotCount,
   extraData,
 }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
@@ -57,7 +56,7 @@ const AvailableAttendees = ({
     <View style={s.listHeader}>
       <Text style={s.listHeaderText}>Choose More Networking Partners</Text>
       <Text style={s.listHeaderDescText}>
-        Select {slotCount} people to have {Math.round(secondsPerMeeting / 60)} minute chats with at
+        Choose {remainingSlotCount} more partner{remainingSlotCount > 1 ? 's' : ''} to chat with at
         the event.
       </Text>
     </View>
