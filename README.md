@@ -8,7 +8,6 @@
 
 ```json
 {
-  "currentSlotIndex": 1,
   "slotCount": 12,
   "topics": "Default topic 1\nDefault topic 2\n..."
 }

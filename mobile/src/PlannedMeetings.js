@@ -15,20 +15,12 @@
  */
 
 import React from 'react'
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Avatar } from '@doubledutch/rn-client'
-import { plus } from './images'
 
 const getAttendeeKey = x => `${x.id}-${x.firstName}-${x.lastName}`
 
-const AvailableAttendees = ({
-  addMeeting,
-  attendees,
-  viewDetails,
-  primaryColor,
-  remainingSlotCount,
-  extraData,
-}) => {
+const PlannedMeetings = ({ attendees, extraData, primaryColor, slotCount, viewDetails }) => {
   const viewAttendeeDetails = attendee => () => viewDetails(attendee)
 
   const renderItem = ({ item }) => (
@@ -43,21 +35,14 @@ const AvailableAttendees = ({
         </Text>
         <Text style={[s.more, { color: primaryColor }]}>More</Text>
       </View>
-      <TouchableOpacity
-        style={[s.actions, { borderColor: primaryColor }]}
-        onPress={() => addMeeting(item.id, item.mutuallyAvailableSlots[0])}
-      >
-        <Image source={plus} style={[s.actionIcon, { backgroundColor: primaryColor }]} />
-      </TouchableOpacity>
     </TouchableOpacity>
   )
 
   const ListHeader = () => (
     <View style={s.listHeader}>
-      <Text style={s.listHeaderText}>Available Networking Partners</Text>
+      <Text style={s.listHeaderText}>Networking Partners</Text>
       <Text style={s.listHeaderDescText}>
-        Choose {remainingSlotCount} more partner{remainingSlotCount > 1 ? 's' : ''} to chat with at
-        the event.
+        {attendees.length} out of {slotCount} chosen so far
       </Text>
     </View>
   )
@@ -76,7 +61,7 @@ const AvailableAttendees = ({
   )
 }
 
-export default AvailableAttendees
+export default PlannedMeetings
 
 const ItemSeparator = () => <View style={s.separator} />
 
@@ -122,19 +107,6 @@ const s = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     flex: 1,
-  },
-  actions: {
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 5,
-  },
-  actionIcon: {
-    height: 20,
-    width: 20,
   },
   separator: {
     height: 1,

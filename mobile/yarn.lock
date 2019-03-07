@@ -660,6 +660,11 @@
     babel-runtime "^6.26.0"
     firebase "^5.5.8"
 
+"@doubledutch/react-timer@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@doubledutch/react-timer/-/react-timer-0.0.2.tgz#5bb80e2feb17b51dd25b6841821a5eeafb226d8e"
+  integrity sha512-CIb37BxLAfEreMspDsc91Nk1KB2ILXem812GJnllZjp34ljlfYMvbhWQ+TbZm0kcdj2d+2k5TPmnMAyJBmjg7g==
+
 "@doubledutch/rn-client@5.0.1-alpha":
   version "5.0.1-alpha"
   resolved "https://registry.yarnpkg.com/@doubledutch/rn-client/-/rn-client-5.0.1-alpha.tgz#6c503e11be4860a8c340362c831eec00282b18d6"
