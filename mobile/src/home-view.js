@@ -211,7 +211,6 @@ class HomeView extends PureComponent {
       meetings,
       primaryColor,
       requireIsHere,
-      secondsPerMeeting,
       showSettings,
       slotCount,
       topics,

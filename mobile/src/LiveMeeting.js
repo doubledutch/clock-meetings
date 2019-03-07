@@ -16,9 +16,9 @@
 
 import React from 'react'
 import { SafeAreaView as SAV, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Timer from './Timer'
-
 import { Avatar, Color } from '@doubledutch/rn-client'
+
+import Timer from './Timer'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
