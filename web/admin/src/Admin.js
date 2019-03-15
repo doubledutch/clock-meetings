@@ -61,6 +61,8 @@ export default class Admin extends PureComponent {
     } = this.props
     const { requireIsHere, topics, users } = this.state
 
+    if (requireIsHere == null) return <div>Loading...</div>
+
     const userIsHere = id => users[id] != null && users[id].isHere
     const notHereMeetings = requireIsHere
       ? Object.values(meetings).filter(m => !userIsHere(m.a) || !userIsHere(m.b))
