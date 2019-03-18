@@ -170,7 +170,8 @@ class HomeView extends PureComponent {
   setTimer = () => {
     const meeting = getMeetingState(this.getServerTime, this.state)
     this.setState({ meeting })
-    if (meeting.isLive) setTimeout(this.setTimer, meeting.endTime - this.getServerTime())
+    const ms = Math.min(meeting.endTime - this.getServerTime(), 5000) // Check at least every 5 seconds.
+    if (meeting.isLive) setTimeout(this.setTimer, ms)
   }
 
   mutuallyAvailableSlotIndexes = otherId => {
