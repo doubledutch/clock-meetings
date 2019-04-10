@@ -68,6 +68,7 @@ class HomeView extends PureComponent {
     secondsBeforeMeetings: null,
     secondsPerMeeting: null,
   }
+
   constructor(props) {
     super(props)
 
@@ -212,6 +213,7 @@ class HomeView extends PureComponent {
       meetings,
       primaryColor,
       requireIsHere,
+      secondsPerMeeting,
       showSettings,
       slotCount,
       topics,
@@ -307,9 +309,13 @@ class HomeView extends PureComponent {
         </View>
       )
 
+    const minutes =
+      secondsPerMeeting >= 120
+        ? `${Math.round(secondsPerMeeting / 60)} minutes`
+        : `${secondsPerMeeting} seconds`
     const helpTexts = [
       `Magic Hour is a live, face-to-face speed-networking experience designed to get rid of small talk and make sure everyone walks away with at least ${slotCount} new friends`,
-      `Browse through guests’ topics and choose ${slotCount} conversation partners now. You’ll get 5 minutes with each person you choose.`,
+      `Browse through guests’ topics and choose ${slotCount} conversation partners now. You’ll get ${minutes} with each person you choose.`,
       'If you don’t choose now, you can scan QR codes of people live at the event. However, you might find yourself with a more limited selection of partners. Ready? Set? Choose your partners!',
     ]
 
@@ -396,6 +402,7 @@ class HomeView extends PureComponent {
   }
 
   persistCachedUsers = debounce(() => setAsyncStorageValue(cachedUsersKey, this.cachedUsers), 5000)
+
   getCachedUser = id => {
     let cached = this.cachedUsers[id]
     const now = new Date().valueOf()
