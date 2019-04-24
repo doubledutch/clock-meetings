@@ -15,17 +15,14 @@
  */
 
 import React from 'react'
-import { KeyboardAvoidingView, Platform, StyleSheet, Text } from 'react-native'
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import Button from './Button'
 import { formWithSave, TextInputWithDraft } from './Forms'
+import { charcoalGray } from './styles'
 
 const kavBehavior = Platform.select({ ios: 'padding', android: null })
 export default formWithSave(['topic'], ({ fieldSet, save, primaryColor }) => (
-  <KeyboardAvoidingView style={s.container} behavior={kavBehavior}>
-    <Text style={s.instructions}>
-      Set or change the question you want to talk about during Magic Hour! No small talk, go for the
-      deep questions (other guests select you based on the depth of your questions).
-    </Text>
+  <KeyboardAvoidingView behavior={kavBehavior}>
     <TextInputWithDraft
       fieldSet={fieldSet}
       prop="topic"
@@ -38,26 +35,18 @@ export default formWithSave(['topic'], ({ fieldSet, save, primaryColor }) => (
 ))
 
 const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  instructions: {
-    padding: 10,
-    paddingTop: 50, // Hack to get around the fact that React Native 0.46 doesn't support SafeAreaView
-    fontSize: 16,
-  },
   input: {
     fontSize: 16,
-    flex: 1,
-    backgroundColor: 'white',
-    padding: 10,
-    marginVertical: 10,
+    height: 105,
+    backgroundColor: '#f8f8f8',
+    padding: 12,
+    paddingTop: 12,
     borderWidth: 1,
+    borderRadius: 4,
     borderColor: '#ccc',
+    color: charcoalGray,
   },
   button: {
-    margin: 10,
-    marginBottom: 80,
+    marginTop: 10,
   },
 })

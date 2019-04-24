@@ -15,8 +15,9 @@
  */
 
 import React, { PureComponent } from 'react'
-import { Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Button from './Button'
+import { charcoalGray, lightGray, fontFamily } from './styles'
 import networking from './images/networking.png.js'
 import peopleOnPhones from './images/peopleOnPhones.png.js'
 
@@ -73,19 +74,26 @@ export default class Welcome extends PureComponent {
 
   render() {
     const { stage } = this.state
-    const { dismiss, helpTexts, primaryColor } = this.props
+    const { dismiss, primaryColor, secondsPerMeeting, slotCount } = this.props
     const WelcomeComponent = welcomes[stage]
     const advance =
       stage + 1 < welcomes.length ? () => this.setState({ stage: stage + 1 }) : dismiss
+
+    const time =
+      secondsPerMeeting >= 120
+        ? `${Math.round(secondsPerMeeting / 60)} minutes`
+        : `${secondsPerMeeting} seconds`
+    const helpTexts = [
+      `Magic Hour is a live, face-to-face networking experience designed to make sure everyone walks away with ${slotCount} new friends`,
+      `Browse through guests’ topics and select people you’d like to talk with. You’ll have ${time} with each person and can edit your time slots until 10 minutes beforehand.`,
+    ]
+
     return (
       <WelcomeComponent helpText={helpTexts[stage]} primaryColor={primaryColor} advance={advance} />
     )
   }
 }
 
-const charcoalGray = '#364347'
-const lightGray = '#adadad'
-const fontFamily = Platform.select({ ios: 'Apple SD Gothic Neo', android: 'Roboto' })
 const s = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 5 },

@@ -12,7 +12,8 @@
     "@doubledutch/rn-client": "^5.0.1",
     "lodash.debounce": "^4.0.8",
     "react": "^16.8.3",
-    "react-native": "0.59.4"
+    "react-native": "0.59.4",
+    "react-router": "^5.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",

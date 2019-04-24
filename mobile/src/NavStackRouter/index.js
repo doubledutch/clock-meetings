@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 DoubleDutch, Inc.
+ * Copyright 2019 DoubleDutch, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import { AppRegistry, YellowBox } from 'react-native'
-import HomeView from './src/HomeView'
+import _NavStackRouter from './NavStackRouter'
+import _Link from './Link'
 
-if (YellowBox)
-  YellowBox.ignoreWarnings([
-    'Warning: Async Storage has been extracted',
-    'Warning: WebView has been extracted',
-    'Warning: View.propTypes has been deprecated',
-  ])
-AppRegistry.registerComponent('magichour', () => HomeView)
-AppRegistry.registerComponent('section', () => HomeView)
+export { Route } from 'react-router'
+
+export const NavStackRouter = _NavStackRouter
+export const Link = _Link
