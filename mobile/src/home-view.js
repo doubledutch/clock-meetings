@@ -314,9 +314,8 @@ class HomeView extends PureComponent {
         ? `${Math.round(secondsPerMeeting / 60)} minutes`
         : `${secondsPerMeeting} seconds`
     const helpTexts = [
-      `Magic Hour is a live, face-to-face speed-networking experience designed to get rid of small talk and make sure everyone walks away with at least ${slotCount} new friends`,
-      `Browse through guests’ topics and choose ${slotCount} conversation partners now. You’ll get ${minutes} with each person you choose.`,
-      'If you don’t choose now, you can scan QR codes of people live at the event. However, you might find yourself with a more limited selection of partners. Ready? Set? Choose your partners!',
+      `Magic Hour is a live, face-to-face networking experience designed to make sure everyone walks away with ${slotCount} new friends`,
+      `Browse through guests’ topics and select people you’d like to talk with. You’ll have ${minutes} with each person and can edit your time slots until 10 minutes beforehand.`,
     ]
 
     return (
@@ -438,7 +437,7 @@ const SettingsButton = ({ onPress }) => (
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#d9e1f9',
+    backgroundColor: '#f8f8f8',
   },
   main: {
     flex: 1,
