@@ -16,6 +16,7 @@
 
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { fontFamily } from './styles'
 
 export default ({ children, color, disabled, onPress, style, text }) => (
   <TouchableOpacity
@@ -44,5 +45,7 @@ const s = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 18,
+    fontFamily,
+    fontWeight: '900',
   },
 })
