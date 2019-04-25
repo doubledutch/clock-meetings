@@ -257,6 +257,7 @@ class Root extends PureComponent {
         cachedUsers={cachedUsers}
         currentUser={currentUser}
         primaryColor={primaryColor}
+        attendeesWithTopics={attendeesWithTopics}
         me={me}
         meetings={meetings}
         saveTopic={this.saveTopic}

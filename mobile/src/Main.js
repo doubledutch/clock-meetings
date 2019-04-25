@@ -15,17 +15,29 @@
  */
 
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
 import { Link } from './NavStackRouter'
 import SetTopic from './SetTopic'
 import { charcoalGray, fontFamily } from './styles'
 
-const Main = ({ currentUser, meetings, primaryColor, saveTopic, slotCount, me }) => {
+const Main = ({
+  attendeesWithTopics,
+  currentUser,
+  meetings,
+  primaryColor,
+  saveTopic,
+  slotCount,
+  me,
+}) => {
   const openSlots = slotCount > meetings.length ? slotCount - meetings.length : 'no'
 
+  const otherTopics = Object.values(attendeesWithTopics)
+    .filter(x => x.id !== me.id)
+    .map(x => x.topic)
+
   return (
-    <View style={s.container}>
+    <ScrollView style={s.container}>
       <View style={s.you}>
         <View style={s.row}>
           <Avatar user={currentUser} size={62} roundedness={0.5} client={client} />
@@ -34,7 +46,12 @@ const Main = ({ currentUser, meetings, primaryColor, saveTopic, slotCount, me })
           </Text>
         </View>
         <Text style={s.yourTopic}>Your Topic:</Text>
-        <SetTopic topic={me && me.topic} onSave={saveTopic} primaryColor={primaryColor} />
+        <SetTopic
+          topic={me && me.topic}
+          onSave={saveTopic}
+          primaryColor={primaryColor}
+          otherTopics={otherTopics}
+        />
       </View>
       <View style={s.slots}>
         <Text style={s.youHave}>
@@ -44,7 +61,7 @@ const Main = ({ currentUser, meetings, primaryColor, saveTopic, slotCount, me })
           <Text>Select People</Text>
         </Link>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
