@@ -18,6 +18,7 @@ import React from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
 import { Link } from './NavStackRouter'
+import Button from './Button'
 import SetTopic from './SetTopic'
 import { charcoalGray, fontFamily } from './styles'
 
@@ -57,8 +58,8 @@ const Main = ({
         <Text style={s.youHave}>
           You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
         </Text>
-        <Link to="/select">
-          <Text>Select People</Text>
+        <Link to="/select" style={s.add}>
+          <Button text="Add a talking buddy +" color={primaryColor} secondary wrapper={View} />
         </Link>
       </View>
     </ScrollView>
@@ -97,6 +98,8 @@ const s = StyleSheet.create({
     fontFamily,
     fontWeight: '900',
     fontSize: 26,
+    marginVertical: 5,
   },
-  slots: { padding: 16, paddingTop: 21 },
+  slots: { padding: 16 },
+  add: { marginTop: 10 },
 })

@@ -46,3 +46,5 @@ const Link = ({ children, style, to }) => (
 )
 
 export default Link
+
+export function linkTo(to)
