@@ -34,6 +34,7 @@ export function formWithSave(fieldNames, WrappedFormComponent) {
         return this.state[fieldName]
       },
       setValue: (fieldName, value) => this.setState({ [fieldName]: value }),
+      isDirty: () => Object.entries(this.state).some(([key, val]) => this.props[key] !== val),
     }
 
     render() {
@@ -41,6 +42,7 @@ export function formWithSave(fieldNames, WrappedFormComponent) {
     }
 
     onChanged = e => this.setState({ draft: e.target.value })
+
     save = () => {
       const values = fieldNames.reduce((obj, fieldName) => {
         obj[fieldName] = this.fieldSet.getValue(fieldName)

@@ -30,7 +30,13 @@ export default formWithSave(['topic'], ({ fieldSet, save, primaryColor }) => (
       multiline
       placeholder="e.g. How do you define a life well-lived?"
     />
-    <Button text="SAVE" onPress={save} color={primaryColor} style={s.button} />
+    <Button
+      text="SAVE"
+      onPress={save}
+      color={primaryColor}
+      style={s.button}
+      disabled={!fieldSet.isDirty()}
+    />
   </KeyboardAvoidingView>
 ))
 
