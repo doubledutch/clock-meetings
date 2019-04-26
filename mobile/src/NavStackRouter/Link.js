@@ -24,9 +24,7 @@ const onPress = (context, to) => () => {
   if (staticContext) {
     // Real router is a StaticRouter.
     const { extension } = staticContext || {}
-    client.openURL(
-      `dd://extensions/${extension}?path=${encodeURIComponent(to)}`
-    )
+    client.openURL(`dd://extensions/${extension}?path=${encodeURIComponent(to)}`)
   } else {
     // Emulated router is a MemoryRouter.
     context.history.push(to)
@@ -46,5 +44,3 @@ const Link = ({ children, style, to }) => (
 )
 
 export default Link
-
-export function linkTo(to)

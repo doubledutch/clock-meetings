@@ -17,7 +17,7 @@
 import React, { PureComponent } from 'react'
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Button from './Button'
-import { charcoalGray, lightGray, fontFamily } from './styles'
+import { bold, charcoalGray, lightGray, fontFamily } from './styles'
 import networking from './images/networking.png.js'
 import peopleOnPhones from './images/peopleOnPhones.png.js'
 
@@ -100,19 +100,19 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap' },
   h1: {
     fontFamily,
-    fontWeight: '900',
+    fontWeight: bold,
     fontSize: 72,
     color: charcoalGray,
   },
   h2: {
     fontFamily,
-    fontWeight: '900',
+    fontWeight: bold,
     fontSize: 36,
     color: charcoalGray,
   },
   h3: {
     fontFamily,
-    fontWeight: '900',
+    fontWeight: bold,
     fontSize: 24,
     color: charcoalGray,
     textAlign: 'center',
@@ -124,7 +124,7 @@ const s = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontWeight: '900',
+    fontWeight: bold,
     fontSize: 20,
   },
   lightGray: { color: lightGray },

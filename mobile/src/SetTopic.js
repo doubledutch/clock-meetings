@@ -116,7 +116,7 @@ const s = StyleSheet.create({
     color: charcoalGray,
     fontFamily,
     marginVertical: 7,
-    fontWeight: '900',
+    fontWeight: 'bold',
   },
   carousel: {
     height: 58,

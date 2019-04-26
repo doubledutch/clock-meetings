@@ -15,7 +15,15 @@
  */
 
 import React, { PureComponent } from 'react'
-import { AsyncStorage, StyleSheet, Text, View } from 'react-native'
+import {
+  AsyncStorage,
+  Modal,
+  SafeAreaView as SAV,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 
 // rn-client must be imported before FirebaseConnector
 import client, { TitleBar } from '@doubledutch/rn-client'
@@ -32,6 +40,10 @@ import _Main from './Main'
 import Welcome from './Welcome'
 import serverTimeFactory from './shared/firebaseServerTime'
 import getMeetingState from './shared/getMeetingState'
+import AttendeeDetails from './AttendeeDetails'
+import { fontFamily } from './styles'
+
+const SafeAreaView = SAV || View
 
 const HomeView = ({ fbc, suggestedTitle, path }) => {
   const title = (path || '').startsWith('/select')
@@ -178,6 +190,7 @@ class Root extends PureComponent {
   render() {
     const {
       allMeetings,
+      attendeeDetails,
       attendeesWithTopics,
       currentUser,
       primaryColor,
@@ -252,22 +265,43 @@ class Root extends PureComponent {
     const { cachedUsers, fbc, pageComponent } = this.props
     const Page = pageComponent
     return (
-      <Page
-        fbc={fbc}
-        cachedUsers={cachedUsers}
-        currentUser={currentUser}
-        primaryColor={primaryColor}
-        attendeesWithTopics={attendeesWithTopics}
-        me={me}
-        meetings={meetings}
-        saveTopic={this.saveTopic}
-        secondsBeforeMeeting={secondsBeforeMeeting}
-        secondsPerMeeting={secondsPerMeeting}
-        slotCount={slotCount}
-        startTime={startTime}
-        topics={topics}
-        requireIsHere={requireIsHere}
-      />
+      <View style={s.container}>
+        <Page
+          fbc={fbc}
+          cachedUsers={cachedUsers}
+          currentUser={currentUser}
+          primaryColor={primaryColor}
+          attendeesWithTopics={attendeesWithTopics}
+          getCachedUser={this.getCachedUser}
+          otherData={this.state.c}
+          me={me}
+          meetings={meetings}
+          viewAttendeeDetails={this.viewAttendeeDetails}
+          saveTopic={this.saveTopic}
+          secondsBeforeMeeting={secondsBeforeMeeting}
+          secondsPerMeeting={secondsPerMeeting}
+          slotCount={slotCount}
+          startTime={startTime}
+          topics={topics}
+          requireIsHere={requireIsHere}
+        />
+        <Modal animationType="slide" visible={!!attendeeDetails} onRequestClose={() => {}}>
+          <SafeAreaView style={s.main}>
+            <AttendeeDetails
+              style={s.modalMain}
+              user={attendeeDetails}
+              hasMeeting={!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id)}
+              primaryColor={primaryColor}
+              addMeeting={this.addMeeting}
+              removeMeeting={this.removeMeeting}
+              dismiss={this.selectNone}
+            />
+            <TouchableOpacity style={s.closeButton} onPress={this.hideAttendeeDetails}>
+              <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
+      </View>
     )
   }
 
@@ -308,6 +342,10 @@ class Root extends PureComponent {
     this.props.fbc.database.public.userRef('topic').set(topic)
     setAsyncStorageValue(topicCompleteKey, true)
   }
+
+  viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
+
+  hideAttendeeDetails = () => this.viewAttendeeDetails(null)
 
   mutuallyAvailableSlotIndexes = otherId => {
     const { allMeetings, currentUser, slotCount } = this.state
@@ -358,6 +396,17 @@ const s = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  closeButton: {
+    padding: 10,
+    marginBottom: 20,
+    fontFamily,
+  },
+  closeButtonText: {
+    fontSize: 24,
+    textAlign: 'center',
+    color: '#fff',
+    fontFamily,
   },
 })
 

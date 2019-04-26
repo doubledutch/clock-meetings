@@ -15,17 +15,20 @@
  */
 
 import React from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
 import { Link } from './NavStackRouter'
 import Button from './Button'
 import SetTopic from './SetTopic'
-import { charcoalGray, fontFamily } from './styles'
+import { bold, charcoalGray, fontFamily } from './styles'
+import chevron from './images/chevron.png.js'
 
 const Main = ({
   attendeesWithTopics,
   currentUser,
+  getCachedUser,
   meetings,
+  viewAttendeeDetails,
   primaryColor,
   saveTopic,
   slotCount,
@@ -36,6 +39,8 @@ const Main = ({
   const otherTopics = Object.values(attendeesWithTopics)
     .filter(x => x.id !== me.id)
     .map(x => x.topic)
+
+  const buddyOpener = attendee => () => viewAttendeeDetails(attendee)
 
   return (
     <ScrollView style={s.container}>
@@ -58,6 +63,19 @@ const Main = ({
         <Text style={s.youHave}>
           You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
         </Text>
+        {meetings.map(userId => {
+          const buddy = getCachedUser(userId)
+          const { topic } = attendeesWithTopics[userId] || {}
+          return (
+            <Meeting
+              key={userId}
+              buddy={buddy}
+              topic={topic}
+              numberOfLines={1}
+              onPress={buddyOpener({ ...buddy, topic })}
+            />
+          )
+        })}
         <Link to="/select" style={s.add}>
           <Button text="Add a talking buddy +" color={primaryColor} secondary wrapper={View} />
         </Link>
@@ -67,6 +85,21 @@ const Main = ({
 }
 
 export default Main
+
+const Meeting = ({ buddy, topic, numberOfLines, onPress }) => (
+  <TouchableOpacity style={s.buddy} onPress={onPress}>
+    <Avatar user={buddy} size={55} roundedness={0.5} client={client} />
+    <View style={s.buddyDetails}>
+      <Text style={s.buddyName}>
+        {buddy.firstName} {buddy.lastName}
+      </Text>
+      <Text style={s.buddyTopic} numberOfLines={numberOfLines}>
+        {topic}
+      </Text>
+    </View>
+    <Image source={chevron} style={s.chevron} color={charcoalGray} />
+  </TouchableOpacity>
+)
 
 const s = StyleSheet.create({
   container: { flex: 1 },
@@ -85,6 +118,13 @@ const s = StyleSheet.create({
     color: charcoalGray,
     fontFamily,
     fontSize: 24,
+    fontWeight: bold,
+  },
+  buddyName: {
+    color: charcoalGray,
+    fontFamily,
+    fontSize: 21,
+    fontWeight: bold,
   },
   yourTopic: {
     color: charcoalGray,
@@ -93,13 +133,35 @@ const s = StyleSheet.create({
     marginTop: 16,
     marginBottom: 11,
   },
+  buddyTopic: {
+    color: charcoalGray,
+    fontFamily,
+    fontSize: 19,
+    marginTop: 3,
+  },
   youHave: {
     color: charcoalGray,
     fontFamily,
-    fontWeight: '900',
+    fontWeight: '700',
     fontSize: 26,
-    marginVertical: 5,
+    marginTop: 5,
+    marginBottom: 8,
   },
   slots: { padding: 16 },
+  buddy: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 4,
+    borderColor: '#dedede',
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  buddyDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
   add: { marginTop: 10 },
+  chevron: { height: 14, width: 8 },
 })

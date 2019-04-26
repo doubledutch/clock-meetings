@@ -18,4 +18,5 @@ import { Platform } from 'react-native'
 
 export const charcoalGray = '#364347'
 export const lightGray = '#adadad'
-export const fontFamily = Platform.select({ ios: 'Apple SD Gothic Neo', android: 'Roboto' })
+export const fontFamily = Platform.select({ ios: 'System', android: 'Roboto' })
+export const bold = '500'
