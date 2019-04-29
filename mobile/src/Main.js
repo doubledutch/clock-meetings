@@ -34,7 +34,8 @@ const Main = ({
   slotCount,
   me,
 }) => {
-  const openSlots = slotCount > meetings.length ? slotCount - meetings.length : 'no'
+  const filledMeetings = meetings.filter(x => x)
+  const openSlots = slotCount > filledMeetings.length ? slotCount - filledMeetings.length : 'no'
 
   const otherTopics = Object.values(attendeesWithTopics)
     .filter(x => x.id !== me.id)
@@ -63,7 +64,7 @@ const Main = ({
         <Text style={s.youHave}>
           You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
         </Text>
-        {meetings.map(userId => {
+        {filledMeetings.map(userId => {
           const buddy = getCachedUser(userId)
           const { topic } = attendeesWithTopics[userId] || {}
           return (

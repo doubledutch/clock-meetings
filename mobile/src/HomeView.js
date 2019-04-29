@@ -252,7 +252,6 @@ class Root extends PureComponent {
     if (requireIsHere) {
       attendeesToList = attendeesToList.filter(u => u.isHere)
     }
-    debugger
 
     const me = attendeesWithTopics[currentUser.id] || {}
     const topicsForMeeting = m => {
@@ -264,6 +263,7 @@ class Root extends PureComponent {
 
     const { cachedUsers, fbc, pageComponent } = this.props
     const Page = pageComponent
+    console.log(!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id))
     return (
       <View style={s.container}>
         <Page
@@ -278,6 +278,7 @@ class Root extends PureComponent {
           extraData={this.state.c}
           me={me}
           meetings={meetings}
+          mutuallyAvailableSlotIndexes={this.mutuallyAvailableSlotIndexes}
           viewAttendeeDetails={this.viewAttendeeDetails}
           saveTopic={this.saveTopic}
           secondsBeforeMeeting={secondsBeforeMeeting}
@@ -292,10 +293,13 @@ class Root extends PureComponent {
             <AttendeeDetails
               user={attendeeDetails}
               hasMeeting={!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id)}
+              mutuallyAvailableSlotIndexes={
+                attendeeDetails ? this.mutuallyAvailableSlotIndexes(attendeeDetails.id) : []
+              }
               primaryColor={primaryColor}
               addMeeting={this.addMeeting}
               removeMeeting={this.removeMeeting}
-              dismiss={this.selectNone}
+              dismiss={this.hideAttendeeDetails}
             />
             <TouchableOpacity style={s.closeButton} onPress={this.hideAttendeeDetails}>
               <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
@@ -337,7 +341,6 @@ class Root extends PureComponent {
     const { currentUser } = this.state
     const { fbc } = this.props
     fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex })
-    this.setState({ attendeeDetails: null })
   }
 
   removeMeeting = userId => {
@@ -352,7 +355,6 @@ class Root extends PureComponent {
         .allRef('meetings')
         .child(meeting.id)
         .remove()
-        .then(() => this.setState({ attendeeDetails: null }))
   }
 
   dismissWelcome = () => {
