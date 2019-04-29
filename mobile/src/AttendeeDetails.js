@@ -17,6 +17,8 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import client, { Avatar, Color } from '@doubledutch/rn-client'
+import Button from './Button'
+import { bold, charcoalGray, fontFamily } from './styles'
 
 const getSecondaryColor = primaryColor =>
   new Color(primaryColor)
@@ -50,14 +52,12 @@ const AttendeeDetails = ({
       <View style={s.main}>
         <View style={s.box}>
           <View style={s.row}>
-            <Avatar user={user} size={100} roundedness={0.6} />
+            <Avatar user={user} size={150} roundedness={0.15} />
             <View style={s.infoBox}>
               <Text style={s.name}>
                 {user.firstName} {user.lastName}
               </Text>
-              <Text style={s.title}>
-                {user.title} - {user.company}
-              </Text>
+              <Text style={s.title}>{user.title}</Text>
             </View>
           </View>
           <View>
@@ -66,12 +66,7 @@ const AttendeeDetails = ({
           </View>
         </View>
         {user.mutuallyAvailableSlots != null && user.mutuallyAvailableSlots.length > 0 && (
-          <TouchableOpacity
-            onPress={addMeetingWithUser}
-            style={[s.footerButton, secondaryBackground]}
-          >
-            <Text style={s.footerButtonText}>Add Meeting</Text>
-          </TouchableOpacity>
+          <Button text="Add Meeting" color="#30B95F" onPress={addMeetingWithUser} />
         )}
         {hasMeeting && (
           <TouchableOpacity
@@ -95,43 +90,52 @@ const s = StyleSheet.create({
   box: {
     borderColor: '#c9d3de',
     borderWidth: 1,
-    backgroundColor: '#f2f6fb',
-    padding: 10,
+    backgroundColor: 'white',
+    padding: 16,
     borderRadius: 8,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 1,
+    marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
     marginBottom: 10,
   },
   infoBox: {
-    marginLeft: 10,
+    marginLeft: 12,
     flex: 1,
     alignItems: 'flex-start',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   name: {
-    fontSize: 18,
+    fontSize: 43,
     marginBottom: 5,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginLeft: 0,
-    color: '#303030',
+    color: charcoalGray,
+    fontFamily,
   },
   title: {
-    fontSize: 14,
+    fontSize: 21,
     marginBottom: 5,
-    color: '#636363',
+    color: charcoalGray,
+    fontFamily,
   },
   header: {
-    fontWeight: 'bold',
+    fontWeight: bold,
     fontSize: 14,
+    fontFamily,
   },
   topic: {
     fontSize: 14,
+    fontFamily,
+    color: charcoalGray,
   },
   main: {
-    padding: 20,
+    padding: 16,
   },
   footerButton: {
     borderRadius: 20,
@@ -146,7 +150,8 @@ const s = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: bold,
+    fontFamily,
   },
   destructiveBackground: {
     backgroundColor: '#d14e53',

@@ -37,6 +37,7 @@ import debounce from 'lodash.debounce'
 
 import { NavStackRouter, Route } from './NavStackRouter'
 import _Main from './Main'
+import _SelectPeople from './SelectPeople'
 import Welcome from './Welcome'
 import serverTimeFactory from './shared/firebaseServerTime'
 import getMeetingState from './shared/getMeetingState'
@@ -51,7 +52,7 @@ const HomeView = ({ fbc, suggestedTitle, path }) => {
     : suggestedTitle || 'Magic Hour'
 
   const Main = () => <Root pageComponent={_Main} fbc={fbc} />
-  const SelectPeoplePage = () => <Root pageComponent={SelectPeople} fbc={fbc} />
+  const SelectPeople = () => <Root pageComponent={_SelectPeople} fbc={fbc} />
 
   return (
     <View style={s.container}>
@@ -59,14 +60,12 @@ const HomeView = ({ fbc, suggestedTitle, path }) => {
       <NavStackRouter path={path} extension="magichour">
         <View style={s.container}>
           <Route exact path="/" component={Main} />
-          <Route exact path="/select" component={SelectPeoplePage} />
+          <Route exact path="/select" component={SelectPeople} />
         </View>
       </NavStackRouter>
     </View>
   )
 }
-
-const SelectPeople = () => <Text>TODO: SELECT PEOPLE</Text>
 
 class Root extends PureComponent {
   state = {
@@ -253,6 +252,7 @@ class Root extends PureComponent {
     if (requireIsHere) {
       attendeesToList = attendeesToList.filter(u => u.isHere)
     }
+    debugger
 
     const me = attendeesWithTopics[currentUser.id] || {}
     const topicsForMeeting = m => {
@@ -271,9 +271,11 @@ class Root extends PureComponent {
           cachedUsers={cachedUsers}
           currentUser={currentUser}
           primaryColor={primaryColor}
+          addMeeting={this.addMeeting}
+          attendeesToList={attendeesToList}
           attendeesWithTopics={attendeesWithTopics}
           getCachedUser={this.getCachedUser}
-          otherData={this.state.c}
+          extraData={this.state.c}
           me={me}
           meetings={meetings}
           viewAttendeeDetails={this.viewAttendeeDetails}
@@ -285,10 +287,9 @@ class Root extends PureComponent {
           topics={topics}
           requireIsHere={requireIsHere}
         />
-        <Modal animationType="slide" visible={!!attendeeDetails} onRequestClose={() => {}}>
-          <SafeAreaView style={s.main}>
+        <Modal animationType="slide" visible={!!attendeeDetails} style={s.attendeeModal}>
+          <SafeAreaView>
             <AttendeeDetails
-              style={s.modalMain}
               user={attendeeDetails}
               hasMeeting={!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id)}
               primaryColor={primaryColor}
@@ -330,6 +331,28 @@ class Root extends PureComponent {
       })
     }
     return cached
+  }
+
+  addMeeting = (userId, slotIndex) => {
+    const { currentUser } = this.state
+    const { fbc } = this.props
+    fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex })
+    this.setState({ attendeeDetails: null })
+  }
+
+  removeMeeting = userId => {
+    const { allMeetings, currentUser } = this.state
+    const { fbc } = this.props
+    const meeting = allMeetings.find(
+      m => (m.a === currentUser.id && m.b === userId) || (m.a === userId && m.b === currentUser.id),
+    )
+
+    if (meeting)
+      fbc.database.public
+        .allRef('meetings')
+        .child(meeting.id)
+        .remove()
+        .then(() => this.setState({ attendeeDetails: null }))
   }
 
   dismissWelcome = () => {
@@ -407,6 +430,9 @@ const s = StyleSheet.create({
     textAlign: 'center',
     color: '#fff',
     fontFamily,
+  },
+  attendeeModal: {
+    backgroundColor: '#f8f8f8',
   },
 })
 
