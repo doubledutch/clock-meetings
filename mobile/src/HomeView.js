@@ -263,7 +263,6 @@ class Root extends PureComponent {
 
     const { cachedUsers, fbc, pageComponent } = this.props
     const Page = pageComponent
-    console.log(!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id))
     return (
       <View style={s.container}>
         <Page

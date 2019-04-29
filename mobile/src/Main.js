@@ -26,22 +26,25 @@ import chevron from './images/chevron.png.js'
 const Main = ({
   attendeesWithTopics,
   currentUser,
+  fbc,
   getCachedUser,
+  me,
   meetings,
-  viewAttendeeDetails,
   primaryColor,
+  requireIsHere,
   saveTopic,
   slotCount,
-  me,
+  viewAttendeeDetails,
 }) => {
   const filledMeetings = meetings.filter(x => x)
-  const openSlots = slotCount > filledMeetings.length ? slotCount - filledMeetings.length : 'no'
+  const openSlots = slotCount > filledMeetings.length ? slotCount - filledMeetings.length : 0
 
   const otherTopics = Object.values(attendeesWithTopics)
     .filter(x => x.id !== me.id)
     .map(x => x.topic)
 
   const buddyOpener = attendee => () => viewAttendeeDetails(attendee)
+  const setIsHere = () => fbc.database.public.userRef('isHere').set(true)
 
   return (
     <ScrollView style={s.container}>
@@ -61,9 +64,24 @@ const Main = ({
         />
       </View>
       <View style={s.slots}>
-        <Text style={s.youHave}>
-          You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
-        </Text>
+        <View style={[s.row, s.youHaveContainer]}>
+          {openSlots ? (
+            <Text style={s.youHave}>
+              You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
+            </Text>
+          ) : (
+            <Text style={s.youHave}>You have {slotCount} people to talk with!</Text>
+          )}
+          {requireIsHere && !me.isHere && (
+            <Button
+              secondary
+              text="I'm Here"
+              color={primaryColor}
+              style={s.imHere}
+              onPress={setIsHere}
+            />
+          )}
+        </View>
         {filledMeetings.map(userId => {
           const buddy = getCachedUser(userId)
           const { topic } = attendeesWithTopics[userId] || {}
@@ -78,7 +96,7 @@ const Main = ({
           )
         })}
         <Link to="/select" style={s.add}>
-          <Button text="Add a talking buddy +" color={primaryColor} secondary wrapper={View} />
+          <Button text="Add a Person +" color={primaryColor} secondary wrapper={View} />
         </Link>
       </View>
     </ScrollView>
@@ -141,10 +159,13 @@ const s = StyleSheet.create({
     marginTop: 3,
   },
   youHave: {
+    flex: 1,
     color: charcoalGray,
     fontFamily,
     fontWeight: '700',
     fontSize: 26,
+  },
+  youHaveContainer: {
     marginTop: 5,
     marginBottom: 8,
   },
@@ -165,4 +186,9 @@ const s = StyleSheet.create({
   },
   add: { marginTop: 10 },
   chevron: { height: 14, width: 8 },
+  imHere: {
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    marginLeft: 10,
+  },
 })
