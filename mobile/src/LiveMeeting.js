@@ -15,10 +15,20 @@
  */
 
 import React from 'react'
-import { SafeAreaView as SAV, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  Dimensions,
+  Image,
+  SafeAreaView as SAV,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { Avatar, Color } from '@doubledutch/rn-client'
 
 import Timer from './Timer'
+import { charcoalGray, fontFamily, bold } from './styles'
+import vr from './images/vr.png.js'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
@@ -36,28 +46,26 @@ const rainbowColor = x => new Color({ h: -x, s: 1, v: 0.8 }).rgbString()
 export default ({
   allMeetings,
   currentMeeting,
-  defaultTopic,
   getCachedUser,
   getServerTime,
   meeting,
   meetings,
-  topics,
+  topic,
 }) => {
   const currentMeetingUserId = meetings[meeting.roundIndex]
   if (!currentMeetingUserId) {
+    const height = Dimensions.get('window').height * 0.3
+    const vrSize = { height, width: height * (147 / 247) }
     return (
       <View style={s.outer}>
-        <SafeAreaView style={s.inner}>
-          {meeting.isBreak ? (
-            <Text style={s.round}>Break</Text>
-          ) : (
-            <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
-          )}
+        <View style={s.breakDetail}>
+          <Text style={s.round}>Break time!</Text>
 
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
           <Text style={s.instructions}>Take a break!</Text>
           <Text style={s.instructions}>You have nothing scheduled this round.</Text>
-        </SafeAreaView>
+        </View>
+        <Image source={vr} style={[s.vr, vrSize]} />
       </View>
     )
   }
@@ -98,27 +106,12 @@ export default ({
         )}
         <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
         {!meeting.isBreak &&
-          (topics.length > 0 ? (
+          (topic ? (
             <View style={s.topics}>
-              <Text style={s.instructions}>Your topics:</Text>
-              {topics.map(t => (
-                <Text style={s.topic} key={t}>
-                  {t}
-                </Text>
-              ))}
+              <Text style={s.instructions}>Topic:</Text>
+              <Text style={s.topic}>{topic}</Text>
             </View>
-          ) : (
-            !!defaultTopic && (
-              <View style={s.topics}>
-                <Text style={s.instructions}>Your topics:</Text>
-                {topics.map(t => (
-                  <Text style={s.topic} key={t}>
-                    {t}
-                  </Text>
-                ))}
-              </View>
-            )
-          ))}
+          ) : null)}
       </SafeAreaView>
     </ScrollView>
   )
@@ -127,39 +120,45 @@ export default ({
 const s = StyleSheet.create({
   outer: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: '#f8f8f8',
   },
-  inner: {
+  breakDetail: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 70,
   },
   round: {
     fontSize: 32,
-    color: 'white',
+    color: charcoalGray,
+    fontFamily,
     marginBottom: 10,
   },
   timer: {
-    fontSize: 60,
-    color: 'white',
+    fontSize: 72,
+    color: charcoalGray,
+    fontFamily,
+    fontWeight: '600',
     marginVertical: 20,
   },
   instructions: {
     fontSize: 18,
-    color: 'white',
+    color: charcoalGray,
+    fontFamily,
     textAlign: 'center',
     marginVertical: 5,
   },
   name: {
     fontSize: 24,
-    color: 'white',
+    color: charcoalGray,
+    fontFamily,
     textAlign: 'center',
     marginVertical: 5,
   },
   number: {
     fontSize: 100,
     fontWeight: 'bold',
-    color: 'white',
+    color: charcoalGray,
+    fontFamily,
     textAlign: 'center',
     marginVertical: 15,
   },
@@ -168,7 +167,15 @@ const s = StyleSheet.create({
   },
   topic: {
     fontSize: 14,
+    fontFamily,
     marginVertical: 5,
-    color: 'white',
+    color: charcoalGray,
+  },
+  vr: {
+    position: 'absolute',
+    bottom: 15,
+    left: 35,
+    zIndex: 1,
+    resizeMode: 'contain',
   },
 })

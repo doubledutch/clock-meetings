@@ -39,6 +39,7 @@ import { NavStackRouter, Route } from './NavStackRouter'
 import _Main from './Main'
 import _SelectPeople from './SelectPeople'
 import Welcome from './Welcome'
+import LiveMeeting from './LiveMeeting'
 import serverTimeFactory from './shared/firebaseServerTime'
 import getMeetingState from './shared/getMeetingState'
 import AttendeeDetails from './AttendeeDetails'
@@ -47,23 +48,16 @@ import { fontFamily } from './styles'
 const SafeAreaView = SAV || View
 
 const HomeView = ({ fbc, suggestedTitle, path }) => {
-  const title = (path || '').startsWith('/select')
-    ? 'Select People'
-    : suggestedTitle || 'Magic Hour'
-
-  const Main = () => <Root pageComponent={_Main} fbc={fbc} />
-  const SelectPeople = () => <Root pageComponent={_SelectPeople} fbc={fbc} />
+  const Main = () => <Root pageComponent={_Main} fbc={fbc} title={suggestedTitle || 'Magic Hour'} />
+  const SelectPeople = () => <Root pageComponent={_SelectPeople} fbc={fbc} title="Select People" />
 
   return (
-    <View style={s.container}>
-      <TitleBar title={title} client={client} />
-      <NavStackRouter path={path} extension="magichour">
-        <View style={s.container}>
-          <Route exact path="/" component={Main} />
-          <Route exact path="/select" component={SelectPeople} />
-        </View>
-      </NavStackRouter>
-    </View>
+    <NavStackRouter path={path} extension="magichour">
+      <View style={s.container}>
+        <Route exact path="/" component={Main} />
+        <Route exact path="/select" component={SelectPeople} />
+      </View>
+    </NavStackRouter>
   )
 }
 
@@ -187,6 +181,16 @@ class Root extends PureComponent {
   }
 
   render() {
+    const { title } = this.props
+    return (
+      <View style={s.container}>
+        <TitleBar title={title} client={client} />
+        {this.renderContent()}
+      </View>
+    )
+  }
+
+  renderContent() {
     const {
       allMeetings,
       attendeeDetails,
@@ -227,7 +231,29 @@ class Root extends PureComponent {
           )
 
     const currentMeetingUserId = meeting.isLive ? meetings[meeting.roundIndex] : null
-    const currentMeeting = meetingWith(currentMeetingUserId)
+    const topicForMeeting = m => {
+      if (!m) return null
+      const a = attendeesWithTopics[m.a]
+      const b = attendeesWithTopics[m.b]
+      const topic = (m.a === currentUser.id ? a && a.topic : b && b.topic) || topics[m.slotIndex]
+      return topic
+    }
+
+    if (meeting.isLive) {
+      const currentMeeting = meetingWith(currentMeetingUserId)
+      return (
+        <LiveMeeting
+          allMeetings={allMeetings}
+          currentMeeting={currentMeeting}
+          defaultTopic={topics && topics[meeting.roundIndex]}
+          getCachedUser={this.getCachedUser}
+          getServerTime={this.getServerTime}
+          meeting={meeting}
+          meetings={meetings}
+          topic={topicForMeeting(currentMeeting)}
+        />
+      )
+    }
 
     const availableAttendees = Object.entries(attendeesWithTopics)
       .map(([id, attendee]) => ({
@@ -237,15 +263,6 @@ class Root extends PureComponent {
         mutuallyAvailableSlots: this.mutuallyAvailableSlotIndexes(id),
       }))
       .filter(a => a.mutuallyAvailableSlots.length && a.id !== currentUser.id)
-
-    const selectedAttendees = Object.entries(meetings)
-      .filter(([, id]) => id)
-      .sort(([i1], [i2]) => i1 - i2)
-      .map(([, id]) => ({
-        ...attendeesWithTopics[id],
-        ...this.getCachedUser(id),
-        id,
-      }))
 
     let attendeesToList = availableAttendees
 
