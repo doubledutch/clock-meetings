@@ -94,11 +94,17 @@ export default ({
     backgroundColor: rainbowColor(orderIndex / meetingsThisRound.length),
   }
 
+  const footerText = meeting.isBreak
+    ? 'Look for your next talking partner to have the same Number and Color on their phone.'
+    : 'Talk with your partner who has the same Number and Color on their phone.'
   return (
     <ScrollView style={[s.outer, background]}>
       <SafeAreaView style={s.inner}>
         <View style={s.top}>
-          <Text style={s.number}>{orderIndex + 1}</Text>
+          <View style={s.numbers}>
+            <Text style={s.number}>{orderIndex + 1}</Text>
+            <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.liveTimer} />
+          </View>
           <View style={s.card}>
             <View style={s.row}>
               <Avatar user={otherUser} size={150} roundedness={0.15} />
@@ -113,29 +119,7 @@ export default ({
             <Text style={s.topic}>{topic}</Text>
           </View>
         </View>
-        <Text style={s.footer}>
-          Look for your talking partner to have the same Number and Color on their phone.
-        </Text>
-        {/* {meeting.isBreak ? (
-          [
-            <Text style={s.instructions} key="find">
-              Find {otherUser.firstName} for the upcoming round.
-            </Text>,
-            <Text style={s.instructions} key="same">
-              Their screen will have the same color and number.
-            </Text>,
-          ]
-        ) : (
-          <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
-        )}
-        <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
-        {!meeting.isBreak &&
-          (topic ? (
-            <View style={s.topics}>
-              <Text style={s.instructions}>Topic:</Text>
-              <Text style={s.topic}>{topic}</Text>
-            </View>
-          ) : null)} */}
+        <Text style={s.footer}>{footerText}</Text>
       </SafeAreaView>
     </ScrollView>
   )
@@ -191,6 +175,12 @@ const s = StyleSheet.create({
     fontWeight: '600',
     marginVertical: 20,
   },
+  liveTimer: {
+    fontSize: 40,
+    color: 'white',
+    fontFamily,
+    fontWeight: '500',
+  },
   instructions: {
     fontSize: 18,
     color: charcoalGray,
@@ -198,13 +188,18 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 5,
   },
+  numbers: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 15,
+  },
   number: {
     fontSize: 72,
     fontWeight: '600',
     color: 'white',
     fontFamily,
     marginTop: 15,
-    marginBottom: 25,
   },
   topicTitle: {
     fontSize: 29,
