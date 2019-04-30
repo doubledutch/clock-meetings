@@ -41,7 +41,17 @@ function sortMeetings(m1, m2) {
   return 0
 }
 
-const rainbowColor = x => new Color({ h: -x, s: 1, v: 0.8 }).rgbString()
+const rainbowColor = x => new Color({ h: -x, s: 0.7, v: 0.85 }).rgbString()
+
+const nameSize = user => {
+  if (!user) return { fontSize: 43 }
+  const maxLength = Math.max(
+    user.firstName ? user.firstName.length : 1,
+    user.lastName ? user.lastName.length : 1,
+  )
+  const fontSize = Math.min(330 / maxLength, 43)
+  return { fontSize }
+}
 
 export default ({
   allMeetings,
@@ -87,12 +97,26 @@ export default ({
   return (
     <ScrollView style={[s.outer, background]}>
       <SafeAreaView style={s.inner}>
-        <Text style={s.number}>{orderIndex + 1}</Text>
-        <Avatar user={otherUser} size={150} roundedness={0.6} />
-        <Text style={s.name} key="name">
-          {otherUser.firstName} {otherUser.lastName}
+        <View style={s.top}>
+          <Text style={s.number}>{orderIndex + 1}</Text>
+          <View style={s.card}>
+            <View style={s.row}>
+              <Avatar user={otherUser} size={150} roundedness={0.15} />
+              <View style={s.userDetail}>
+                <Text style={[s.name, nameSize(otherUser)]} key="name">
+                  {otherUser.firstName} {otherUser.lastName}
+                </Text>
+                <Text style={s.title}>{otherUser.title}</Text>
+              </View>
+            </View>
+            <Text style={s.topicTitle}>Topic:</Text>
+            <Text style={s.topic}>{topic}</Text>
+          </View>
+        </View>
+        <Text style={s.footer}>
+          Look for your talking partner to have the same Number and Color on their phone.
         </Text>
-        {meeting.isBreak ? (
+        {/* {meeting.isBreak ? (
           [
             <Text style={s.instructions} key="find">
               Find {otherUser.firstName} for the upcoming round.
@@ -111,7 +135,7 @@ export default ({
               <Text style={s.instructions}>Topic:</Text>
               <Text style={s.topic}>{topic}</Text>
             </View>
-          ) : null)}
+          ) : null)} */}
       </SafeAreaView>
     </ScrollView>
   )
@@ -121,11 +145,38 @@ const s = StyleSheet.create({
   outer: {
     flex: 1,
     backgroundColor: '#f8f8f8',
+    paddingTop: 22,
+    paddingHorizontal: 16,
+    paddingBottom: 11,
   },
+  top: { flex: 1 },
   breakDetail: {
     flex: 1,
     alignItems: 'center',
     marginTop: 70,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 16,
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  userDetail: {
+    paddingLeft: 12,
+    flex: 1,
+  },
+  name: {
+    fontFamily,
+    fontSize: 43,
+    fontWeight: '500',
+    color: charcoalGray,
+  },
+  title: {
+    fontFamily,
+    fontSize: 21,
+    color: charcoalGray,
   },
   round: {
     fontSize: 32,
@@ -147,29 +198,32 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 5,
   },
-  name: {
-    fontSize: 24,
-    color: charcoalGray,
-    fontFamily,
-    textAlign: 'center',
-    marginVertical: 5,
-  },
   number: {
-    fontSize: 100,
-    fontWeight: 'bold',
-    color: charcoalGray,
+    fontSize: 72,
+    fontWeight: '600',
+    color: 'white',
     fontFamily,
-    textAlign: 'center',
-    marginVertical: 15,
+    marginTop: 15,
+    marginBottom: 25,
   },
-  topics: {
-    marginHorizontal: 10,
+  topicTitle: {
+    fontSize: 29,
+    fontFamily,
+    marginVertical: 5,
+    color: charcoalGray,
+    fontWeight: bold,
   },
   topic: {
-    fontSize: 14,
+    fontSize: 29,
     fontFamily,
-    marginVertical: 5,
     color: charcoalGray,
+  },
+  footer: {
+    fontSize: 19,
+    fontFamily,
+    color: 'white',
+    textAlign: 'center',
+    marginTop: 30,
   },
   vr: {
     position: 'absolute',
