@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { memo } from 'react'
+import React from 'react'
 import { MemoryRouter, StaticRouter } from 'react-router'
 import client from '@doubledutch/rn-client'
 
@@ -37,6 +37,4 @@ const EmulatedNavStackRouter = ({ children, extension }) => {
   )
 }
 
-export default memo(
-  client._b.isEmulated ? EmulatedNavStackRouter : NavStackRouter
-)
+export default (client._b.isEmulated ? EmulatedNavStackRouter : NavStackRouter)

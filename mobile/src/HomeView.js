@@ -86,7 +86,7 @@ class Root extends PureComponent {
       this.cachedUsers = { ...(users || {}), ...this.cachedUsers }
     })
     getAsyncStorageValue(welcomeCompleteKey).then(isWelcomeComplete =>
-      this.setState({ isWelcomeComplete }),
+      this.setState({ isWelcomeComplete: isWelcomeComplete || false }),
     )
   }
 
@@ -112,7 +112,7 @@ class Root extends PureComponent {
           .on('value', data => this.setState({ secondsPerMeeting: data.val() || 300 }))
         fbc.database.public
           .adminRef('slotCount')
-          .on('value', data => this.setState({ slotCount: data.val() || 12 }))
+          .on('value', data => this.setState({ slotCount: data.val() || 5 }))
 
         fbc.database.public
           .adminRef('topics')

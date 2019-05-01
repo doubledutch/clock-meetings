@@ -96,18 +96,18 @@ export default class Welcome extends PureComponent {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { flex: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 5 },
+  scroll: { flex: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 15 },
   row: { flexDirection: 'row', flexWrap: 'wrap' },
   h1: {
     fontFamily,
     fontWeight: bold,
-    fontSize: 72,
+    fontSize: 65,
     color: charcoalGray,
   },
   h2: {
     fontFamily,
     fontWeight: bold,
-    fontSize: 36,
+    fontSize: 33,
     color: charcoalGray,
   },
   h3: {
@@ -116,6 +116,7 @@ const s = StyleSheet.create({
     fontSize: 24,
     color: charcoalGray,
     textAlign: 'center',
+    marginBottom: 30,
   },
   center: { textAlign: 'center' },
   button: {
@@ -130,10 +131,10 @@ const s = StyleSheet.create({
   lightGray: { color: lightGray },
   image: {
     resizeMode: 'contain',
-    marginVertical: 40,
+    marginVertical: 30,
   },
-  image1: { height: 220 },
-  image2: { height: 250 },
+  image1: { height: 200 },
+  image2: { height: 230 },
   carouselMarkers: { flexDirection: 'row', justifyContent: 'center', padding: 8 },
   carouselMarker: { height: 8, width: 8, borderWidth: 2, borderRadius: 4, marginHorizontal: 3 },
 })
