@@ -19,6 +19,7 @@ import {
   AsyncStorage,
   Modal,
   SafeAreaView as SAV,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -326,22 +327,26 @@ class Root extends PureComponent {
           requireIsHere={requireIsHere}
         />
         <Modal animationType="slide" visible={!!attendeeDetails} style={s.attendeeModal}>
-          <SafeAreaView>
-            <AttendeeDetails
-              user={attendeeDetails}
-              hasMeeting={!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id)}
-              mutuallyAvailableSlotIndexes={
-                attendeeDetails ? this.mutuallyAvailableSlotIndexes(attendeeDetails.id) : []
-              }
-              primaryColor={primaryColor}
-              addMeeting={this.addMeeting}
-              removeMeeting={this.removeMeeting}
-              dismiss={this.hideAttendeeDetails}
-            />
-            <TouchableOpacity style={s.closeButton} onPress={this.hideAttendeeDetails}>
-              <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
-            </TouchableOpacity>
-          </SafeAreaView>
+          <ScrollView>
+            <SafeAreaView>
+              <AttendeeDetails
+                user={attendeeDetails}
+                hasMeeting={
+                  !!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id)
+                }
+                mutuallyAvailableSlotIndexes={
+                  attendeeDetails ? this.mutuallyAvailableSlotIndexes(attendeeDetails.id) : []
+                }
+                primaryColor={primaryColor}
+                addMeeting={this.addMeeting}
+                removeMeeting={this.removeMeeting}
+                dismiss={this.hideAttendeeDetails}
+              />
+              <TouchableOpacity style={s.closeButton} onPress={this.hideAttendeeDetails}>
+                <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
+              </TouchableOpacity>
+            </SafeAreaView>
+          </ScrollView>
         </Modal>
       </View>
     )
