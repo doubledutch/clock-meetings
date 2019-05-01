@@ -166,6 +166,11 @@ export default class Admin extends PureComponent {
           </div>
         ) : (
           <div className="horizontal space-children">
+            {meeting.isMagicHourFinished && finalCTA && finalCTAText && (
+              <button className="dd-bordered destructive" onClick={this.killCTA} type="button">
+                Turn off final call to action
+              </button>
+            )}
             <button className="dd-bordered" onClick={this.startMeetings} type="button">
               Start Magic Hour
             </button>
@@ -382,6 +387,8 @@ export default class Admin extends PureComponent {
       this.props.fbc.database.public.adminRef('startTime').remove()
     }
   }
+
+  killCTA = () => this.props.fbc.database.public.adminRef('startTime').remove()
 
   requireIsHere = isRequired => () => {
     const { fbc } = this.props
