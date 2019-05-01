@@ -43,6 +43,7 @@ import LiveMeeting from './LiveMeeting'
 import serverTimeFactory from './shared/firebaseServerTime'
 import getMeetingState from './shared/getMeetingState'
 import AttendeeDetails from './AttendeeDetails'
+import FinalClickThroughAction from './FinalClickThroughAction'
 import { fontFamily } from './styles'
 
 const SafeAreaView = SAV || View
@@ -120,6 +121,12 @@ class Root extends PureComponent {
         fbc.database.public
           .adminRef('requireIsHere')
           .on('value', data => this.setState({ requireIsHere: data.val() || false }))
+        fbc.database.public
+          .adminRef('finalCTAText')
+          .on('value', data => this.setState({ finalCTAText: data.val() }))
+        fbc.database.public
+          .adminRef('finalCTA')
+          .on('value', data => this.setState({ finalCTA: data.val() }))
 
         meetingsRef.on('child_added', data => {
           const meeting = { ...data.val(), id: data.key }
@@ -196,10 +203,13 @@ class Root extends PureComponent {
       attendeeDetails,
       attendeesWithTopics,
       currentUser,
-      primaryColor,
+      dismissedFinalCTA,
       isWelcomeComplete,
+      finalCTA,
+      finalCTAText,
       meeting,
       meetings,
+      primaryColor,
       requireIsHere,
       secondsBeforeMeeting,
       secondsPerMeeting,
@@ -251,6 +261,17 @@ class Root extends PureComponent {
           meeting={meeting}
           meetings={meetings}
           topic={topicForMeeting(currentMeeting)}
+        />
+      )
+    }
+
+    if (meeting.isMagicHourFinished && finalCTAText && finalCTA && !dismissedFinalCTA) {
+      return (
+        <FinalClickThroughAction
+          text={finalCTAText}
+          link={finalCTA}
+          primaryColor={primaryColor}
+          exit={this.exitFinalCTA}
         />
       )
     }
@@ -412,6 +433,8 @@ class Root extends PureComponent {
 
     return available
   }
+
+  exitFinalCTA = () => this.setState({ dismissedFinalCTA: true })
 }
 
 const cachedUsersKey = 'magichour_cachedUsers'

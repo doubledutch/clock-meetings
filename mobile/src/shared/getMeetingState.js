@@ -24,8 +24,11 @@ export default function getMeetingState(
 
   // A "round" is a break before a meeting to find your partner, plus the meeting itself.
   const msPerRound = msBeforeMeetings + msPerMeeting
-  if (!startTime || now > startTime + slotCount * msPerRound) {
-    return { isLive: false }
+  if (!startTime) {
+    return { isLive: false, isMagicHourFinished: false }
+  }
+  if (now > startTime + slotCount * msPerRound) {
+    return { isLive: false, isMagicHourFinished: true }
   }
 
   const roundIndex = Math.max(0, Math.floor((now - startTime) / msPerRound))

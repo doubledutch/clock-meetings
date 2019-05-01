@@ -40,7 +40,12 @@ export default class Admin extends PureComponent {
     fbc.database.public
       .adminRef('requireIsHere')
       .on('value', data => this.setState({ requireIsHere: data.val() || false }))
-
+    fbc.database.public
+      .adminRef('finalCTAText')
+      .on('value', data => this.setState({ finalCTAText: data.val() }))
+    fbc.database.public
+      .adminRef('finalCTA')
+      .on('value', data => this.setState({ finalCTA: data.val() }))
     mapPushedDataToStateObjects(fbc.database.public.usersRef(), this, 'users', key => {
       // Trigger lookup for attendee as a side-effect, which will delete their data if not found (deleted).
       this.getCachedUser(key)
@@ -59,7 +64,7 @@ export default class Admin extends PureComponent {
       secondsPerMeeting,
       slotCount,
     } = this.props
-    const { requireIsHere, topics, users } = this.state
+    const { finalCTA, finalCTAText, requireIsHere, topics, users } = this.state
 
     if (requireIsHere == null) return <div>Loading...</div>
 
@@ -113,6 +118,32 @@ export default class Admin extends PureComponent {
             disabled={meeting.isLive}
           />
         </label>
+        <div className="horizontal space-children">
+          <label>
+            Final call to action:
+            <input
+              className="cta"
+              type="text"
+              maxLength={100}
+              value={finalCTAText}
+              onChange={this.updatePublicText('finalCTAText')}
+              disabled={meeting.isLive}
+              placeholder="Take our survey"
+            />
+          </label>
+          <label>
+            Link:
+            <input
+              className="cta"
+              type="text"
+              maxLength={100}
+              value={finalCTA}
+              onChange={this.updatePublicText('finalCTA')}
+              disabled={meeting.isLive}
+              placeholder="dd://extensions/surveys?surveyID=abcd"
+            />
+          </label>
+        </div>
         <div className="horizontal space-children">
           <button className="dd-bordered" type="button" onClick={this.launchBigScreen}>
             Launch big screen
@@ -329,6 +360,10 @@ export default class Admin extends PureComponent {
 
   updatePublicNumber = prop => e => {
     this.props.fbc.database.public.adminRef(prop).set(+e.target.value)
+  }
+
+  updatePublicText = prop => e => {
+    this.props.fbc.database.public.adminRef(prop).set(e.target.value)
   }
 
   updateTopics = e => {
