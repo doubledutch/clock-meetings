@@ -49,7 +49,7 @@ const nameSize = user => {
     user.firstName ? user.firstName.length : 1,
     user.lastName ? user.lastName.length : 1,
   )
-  const fontSize = Math.min(330 / maxLength, 43)
+  const fontSize = Math.min(280 / maxLength, 43)
   return { fontSize }
 }
 
