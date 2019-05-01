@@ -16,20 +16,29 @@
 
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { bold, fontFamily } from './styles'
 
-export default ({ children, color, disabled, onPress, style, text }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={disabled}
-    style={[s.button, style, disabled ? s.disabled : { backgroundColor: color }]}
-  >
-    {children}
-    <Text style={s.buttonText}>
-      {children ? ' ' : ''}
-      {text}
-    </Text>
-  </TouchableOpacity>
-)
+export default ({ children, color, disabled, secondary, onPress, style, text, wrapper }) => {
+  const buttonStyle = secondary
+    ? disabled
+      ? { backgroundColor: 'white', borderColor: '#ccc' }
+      : { backgroundColor: 'white', borderColor: color }
+    : disabled
+    ? s.disabled
+    : { backgroundColor: color, borderColor: color }
+
+  const textStyle = secondary ? { color: disabled ? '#ccc' : color } : null
+  const Wrapper = wrapper || TouchableOpacity
+  return (
+    <Wrapper onPress={onPress} disabled={disabled} style={[s.button, style, buttonStyle]}>
+      {children}
+      <Text style={[s.buttonText, textStyle]}>
+        {children ? ' ' : ''}
+        {text}
+      </Text>
+    </Wrapper>
+  )
+}
 
 const s = StyleSheet.create({
   button: {
@@ -37,12 +46,17 @@ const s = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
   },
   disabled: {
     backgroundColor: '#ccc',
+    borderColor: '#ccc',
   },
   buttonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 19,
+    fontFamily,
+    fontWeight: bold,
   },
 })

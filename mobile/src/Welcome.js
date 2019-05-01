@@ -15,51 +15,171 @@
  */
 
 import React, { PureComponent } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Button from './Button'
-import Carousel from './Carousel'
+import { bold, charcoalGray, lightGray, fontFamily } from './styles'
+import networking from './images/networking.png.js'
+import peopleOnPhones from './images/peopleOnPhones.png.js'
 
+const CarouselMarkers = ({ index, primaryColor }) => (
+  <View style={s.carouselMarkers}>
+    {welcomes.map((_, i) => (
+      <CarouselMarker isSelected={index === i} primaryColor={primaryColor} key={i} />
+    ))}
+  </View>
+)
+
+const CarouselMarker = ({ isSelected, primaryColor }) => {
+  const style = isSelected
+    ? { backgroundColor: primaryColor, borderColor: primaryColor }
+    : { borderColor: primaryColor }
+  return <View style={[s.carouselMarker, style]} />
+}
+
+const Welcome1 = ({ helpText, primaryColor, advance }) => (
+  <View style={s.container}>
+    <ScrollView style={s.scroll}>
+      <Text style={s.h1}>Magic Hour</Text>
+      <View style={s.row}>
+        <Text style={s.h2}>Talk</Text>
+        <Text style={[s.h2, s.lightGray]}> about what </Text>
+        <Text style={s.h2}>matters</Text>
+      </View>
+      <Image source={networking} style={[s.image, s.image1]} />
+      <Text style={s.h3}>{helpText}</Text>
+    </ScrollView>
+    <CarouselMarkers index={0} count={welcomes.length} primaryColor={primaryColor} />
+    <Button color={primaryColor} style={s.button} onPress={advance}>
+      <Text style={s.buttonText}>Next</Text>
+    </Button>
+  </View>
+)
+const Welcome2 = ({ helpText, primaryColor, advance }) => (
+  <View style={s.container}>
+    <ScrollView style={s.scroll}>
+      <Text style={[s.h2, s.center]}>How it works.</Text>
+      <Image source={peopleOnPhones} style={[s.image, s.image2]} />
+      <Text style={s.h3}>{helpText}</Text>
+    </ScrollView>
+    <CarouselMarkers index={1} count={welcomes.length} primaryColor={primaryColor} />
+    <Button color={primaryColor} style={s.button} onPress={advance}>
+      <Text style={s.buttonText}>Let&apos;s do this!</Text>
+    </Button>
+  </View>
+)
+
+const welcomes = [Welcome1, Welcome2]
 export default class Welcome extends PureComponent {
-  state = { canAccept: false }
+  state = { stage: 0 }
 
   render() {
-    const { dismiss, helpTexts, primaryColor } = this.props
-    const { canAccept } = this.state
+    const { stage } = this.state
+    const { dismiss, primaryColor, secondsPerMeeting, slotCount } = this.props
+    const WelcomeComponent = welcomes[stage]
+    const advance =
+      stage + 1 < welcomes.length ? () => this.setState({ stage: stage + 1 }) : dismiss
+
+    const time =
+      secondsPerMeeting >= 120
+        ? `${Math.round(secondsPerMeeting / 60)} minutes`
+        : `${secondsPerMeeting} seconds`
+    const helpTexts = [
+      `Magic Hour is a live, face-to-face networking experience designed to make sure everyone walks away with ${slotCount} new friends`,
+      `Browse through guests’ topics and select people you’d like to talk with. You’ll have ${time} with each person and can edit your time slots until 10 minutes beforehand.`,
+    ]
+
     return (
-      <View style={s.buttonBottomContainer}>
-        <View>
-          <Text style={s.welcome}>Welcome to Magic Hour!</Text>
-          <Carousel texts={helpTexts} onStepChange={this.onStepChange} style={s.carousel} />
-        </View>
-        <Button
-          text="BEGIN"
-          onPress={dismiss}
-          disabled={!canAccept}
-          style={s.bottomButton}
-          color={primaryColor}
-        />
-      </View>
+      <WelcomeComponent helpText={helpTexts[stage]} primaryColor={primaryColor} advance={advance} />
     )
   }
-
-  onStepChange = ({ step, stepCount }) => this.setState({ canAccept: step === stepCount - 1 })
 }
 
 const s = StyleSheet.create({
-  carousel: {
-    height: 200,
+  container: { flex: 1 },
+  scroll: { flex: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 15 },
+  row: { flexDirection: 'row', flexWrap: 'wrap' },
+  h1: {
+    fontFamily,
+    fontWeight: bold,
+    fontSize: 65,
+    color: charcoalGray,
   },
-  welcome: {
+  h2: {
+    fontFamily,
+    fontWeight: bold,
+    fontSize: 33,
+    color: charcoalGray,
+  },
+  h3: {
+    fontFamily,
+    fontWeight: bold,
     fontSize: 24,
-    marginVertical: 15,
-    marginLeft: 7,
+    color: charcoalGray,
+    textAlign: 'center',
+    marginBottom: 30,
   },
-  bottomButton: {
-    marginHorizontal: 7,
-    marginVertical: 20,
+  center: { textAlign: 'center' },
+  button: {
+    marginHorizontal: 16,
+    marginVertical: 11,
   },
-  buttonBottomContainer: {
-    flex: 1,
-    justifyContent: 'space-between',
+  buttonText: {
+    color: 'white',
+    fontWeight: bold,
+    fontSize: 20,
   },
+  lightGray: { color: lightGray },
+  image: {
+    resizeMode: 'contain',
+    marginVertical: 30,
+  },
+  image1: { height: 200 },
+  image2: { height: 230 },
+  carouselMarkers: { flexDirection: 'row', justifyContent: 'center', padding: 8 },
+  carouselMarker: { height: 8, width: 8, borderWidth: 2, borderRadius: 4, marginHorizontal: 3 },
 })
+
+// export class Welcome extends PureComponent {
+//   state = { canAccept: false }
+
+//   render() {
+//     const { dismiss, helpTexts, primaryColor } = this.props
+//     const { canAccept } = this.state
+//     return (
+//       <View style={s.buttonBottomContainer}>
+//         <View>
+//           <Text style={s.welcome}>Welcome to Magic Hour!</Text>
+//           <Carousel texts={helpTexts} onStepChange={this.onStepChange} style={s.carousel} />
+//         </View>
+//         <Button
+//           text="BEGIN"
+//           onPress={dismiss}
+//           disabled={!canAccept}
+//           style={s.bottomButton}
+//           color={primaryColor}
+//         />
+//       </View>
+//     )
+//   }
+
+//   onStepChange = ({ step, stepCount }) => this.setState({ canAccept: step === stepCount - 1 })
+// }
+
+// const ss = StyleSheet.create({
+//   carousel: {
+//     height: 200,
+//   },
+//   welcome: {
+//     fontSize: 24,
+//     marginVertical: 15,
+//     marginLeft: 7,
+//   },
+//   bottomButton: {
+//     marginHorizontal: 7,
+//     marginVertical: 20,
+//   },
+//   buttonBottomContainer: {
+//     flex: 1,
+//     justifyContent: 'space-between',
+//   },
+// })

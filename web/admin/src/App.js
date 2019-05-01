@@ -82,7 +82,7 @@ class App extends PureComponent {
         .on('value', data => this.setState({ secondsPerMeeting: data.val() || 300 }))
       fbc.database.public
         .adminRef('slotCount')
-        .on('value', data => this.setState({ slotCount: data.val() || 12 }))
+        .on('value', data => this.setState({ slotCount: data.val() || 5 }))
 
       mapPushedDataToStateObjects(fbc.database.public.allRef('meetings'), this, 'meetings')
     })

@@ -1,7 +1,7 @@
 {
   "name": "magichour",
-  "version": "3.0.1",
-  "baseBundleVersion": "0.59.1",
+  "version": "4.0.0",
+  "baseBundleVersion": "0.59.3",
   "private": true,
   "scripts": {
     "start": "pushd mobile && npm run ios && popd && pushd web/admin && npm start && popd"

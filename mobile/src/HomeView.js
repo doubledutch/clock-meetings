@@ -17,7 +17,6 @@
 import React, { PureComponent } from 'react'
 import {
   AsyncStorage,
-  Button,
   Modal,
   SafeAreaView as SAV,
   StyleSheet,
@@ -36,27 +35,33 @@ import { ServerValue } from '@firebase/database'
 
 import debounce from 'lodash.debounce'
 
-import AttendeeDetails from './AttendeeDetails'
-import AvailableAttendees from './AvailableAttendees'
-import LiveMeeting from './LiveMeeting'
-import PlannedMeetings from './PlannedMeetings'
-import SetTopic from './SetTopic'
+import { NavStackRouter, Route } from './NavStackRouter'
+import _Main from './Main'
+import _SelectPeople from './SelectPeople'
 import Welcome from './Welcome'
+import LiveMeeting from './LiveMeeting'
 import serverTimeFactory from './shared/firebaseServerTime'
 import getMeetingState from './shared/getMeetingState'
-// import fire
+import AttendeeDetails from './AttendeeDetails'
+import { fontFamily } from './styles'
 
-const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
+const SafeAreaView = SAV || View
 
-const cachedUsersKey = 'magichour_cachedUsers'
-const welcomeCompleteKey = 'magichour_welcomeComplete'
-const topicCompleteKey = 'magichour_topicComplete'
+const HomeView = ({ fbc, suggestedTitle, path }) => {
+  const Main = () => <Root pageComponent={_Main} fbc={fbc} title={suggestedTitle || 'Magic Hour'} />
+  const SelectPeople = () => <Root pageComponent={_SelectPeople} fbc={fbc} title="Select People" />
 
-const getAsyncStorageValue = async key =>
-  AsyncStorage.getItem(key).then(val => (val ? JSON.parse(val) : null))
-const setAsyncStorageValue = async (key, value) => AsyncStorage.setItem(key, JSON.stringify(value))
+  return (
+    <NavStackRouter path={path} extension="magichour">
+      <View style={s.container}>
+        <Route exact path="/" component={Main} />
+        <Route exact path="/select" component={SelectPeople} />
+      </View>
+    </NavStackRouter>
+  )
+}
 
-class HomeView extends PureComponent {
+class Root extends PureComponent {
   state = {
     allMeetings: [],
     attendeesWithTopics: {},
@@ -67,6 +72,7 @@ class HomeView extends PureComponent {
     slotCount: null,
     secondsBeforeMeetings: null,
     secondsPerMeeting: null,
+    isWelcomeComplete: null,
   }
 
   constructor(props) {
@@ -80,10 +86,7 @@ class HomeView extends PureComponent {
       this.cachedUsers = { ...(users || {}), ...this.cachedUsers }
     })
     getAsyncStorageValue(welcomeCompleteKey).then(isWelcomeComplete =>
-      this.setState({ isWelcomeComplete }),
-    )
-    getAsyncStorageValue(topicCompleteKey).then(isTopicComplete =>
-      this.setState({ isTopicComplete }),
+      this.setState({ isWelcomeComplete: isWelcomeComplete || false }),
     )
   }
 
@@ -109,7 +112,7 @@ class HomeView extends PureComponent {
           .on('value', data => this.setState({ secondsPerMeeting: data.val() || 300 }))
         fbc.database.public
           .adminRef('slotCount')
-          .on('value', data => this.setState({ slotCount: data.val() || 12 }))
+          .on('value', data => this.setState({ slotCount: data.val() || 5 }))
 
         fbc.database.public
           .adminRef('topics')
@@ -169,56 +172,54 @@ class HomeView extends PureComponent {
   }
 
   setTimer = () => {
-    const meeting = getMeetingState(this.getServerTime, this.state)
+    const meeting = getMeetingState(this.getServerTime, this.state) // eslint-disable-line react/no-access-state-in-setstate
     this.setState({ meeting })
-    const ms = Math.min(meeting.endTime - this.getServerTime(), 5000) // Check at least every 5 seconds.
-    if (meeting.isLive) setTimeout(this.setTimer, ms)
-  }
-
-  mutuallyAvailableSlotIndexes = otherId => {
-    const { allMeetings, currentUser, slotCount } = this.state
-    const ourMeetings = allMeetings.filter(
-      m => m.a === currentUser.id || m.b === currentUser.id || m.a === otherId || m.b === otherId,
-    )
-
-    // If we already have a meeting set with this attendee, don't show that we can schedule another slot.
-    if (
-      ourMeetings.find(
-        m =>
-          (m.a === currentUser.id && m.b === otherId) ||
-          (m.a === otherId && m.b === currentUser.id),
-      )
-    ) {
-      return []
+    if (meeting.isLive) {
+      const ms = Math.min(meeting.endTime - this.getServerTime(), 5000) // Check at least every 5 seconds.
+      setTimeout(this.setTimer, ms)
     }
-
-    const available = []
-    for (let i = 0; i < slotCount; ++i) {
-      if (!ourMeetings.find(m => m.slotIndex === i)) available.push(i)
-    }
-
-    return available
   }
 
   render() {
-    const { suggestedTitle } = this.props
+    const { title } = this.props
+    return (
+      <View style={s.container}>
+        <TitleBar title={title} client={client} />
+        {this.renderContent()}
+      </View>
+    )
+  }
+
+  renderContent() {
     const {
       allMeetings,
       attendeeDetails,
       attendeesWithTopics,
       currentUser,
-      isTopicComplete,
+      primaryColor,
       isWelcomeComplete,
       meeting,
       meetings,
-      primaryColor,
       requireIsHere,
+      secondsBeforeMeeting,
       secondsPerMeeting,
-      showSettings,
       slotCount,
+      startTime,
       topics,
     } = this.state
-    if (!currentUser || !primaryColor || !slotCount) return <Text>Loading...</Text>
+    if (!currentUser || !primaryColor || slotCount == null || isWelcomeComplete == null)
+      return <Loading />
+
+    if (!isWelcomeComplete) {
+      return (
+        <Welcome
+          dismiss={this.dismissWelcome}
+          primaryColor={primaryColor}
+          secondsPerMeeting={secondsPerMeeting}
+          slotCount={slotCount}
+        />
+      )
+    }
 
     const meetingWith = userId =>
       userId == null
@@ -230,7 +231,29 @@ class HomeView extends PureComponent {
           )
 
     const currentMeetingUserId = meeting.isLive ? meetings[meeting.roundIndex] : null
-    const currentMeeting = meetingWith(currentMeetingUserId)
+    const topicForMeeting = m => {
+      if (!m) return null
+      const a = attendeesWithTopics[m.a]
+      const b = attendeesWithTopics[m.b]
+      const topic = (m.a === currentUser.id ? a && a.topic : b && b.topic) || topics[m.slotIndex]
+      return topic
+    }
+
+    if (meeting.isLive) {
+      const currentMeeting = meetingWith(currentMeetingUserId)
+      return (
+        <LiveMeeting
+          allMeetings={allMeetings}
+          currentMeeting={currentMeeting}
+          defaultTopic={topics && topics[meeting.roundIndex]}
+          getCachedUser={this.getCachedUser}
+          getServerTime={this.getServerTime}
+          meeting={meeting}
+          meetings={meetings}
+          topic={topicForMeeting(currentMeeting)}
+        />
+      )
+    }
 
     const availableAttendees = Object.entries(attendeesWithTopics)
       .map(([id, attendee]) => ({
@@ -241,15 +264,6 @@ class HomeView extends PureComponent {
       }))
       .filter(a => a.mutuallyAvailableSlots.length && a.id !== currentUser.id)
 
-    const selectedAttendees = Object.entries(meetings)
-      .filter(([, id]) => id)
-      .sort(([i1], [i2]) => i1 - i2)
-      .map(([, id]) => ({
-        ...attendeesWithTopics[id],
-        ...this.getCachedUser(id),
-        id,
-      }))
-
     let attendeesToList = availableAttendees
 
     if (requireIsHere) {
@@ -257,7 +271,6 @@ class HomeView extends PureComponent {
     }
 
     const me = attendeesWithTopics[currentUser.id] || {}
-    const title = suggestedTitle || 'MagicHour'
     const topicsForMeeting = m => {
       if (!m) return []
       const a = attendeesWithTopics[m.a]
@@ -265,140 +278,52 @@ class HomeView extends PureComponent {
       return [a && a.topic, b && b.topic].filter(x => x)
     }
 
-    const renderContent = () =>
-      requireIsHere && !me.isHere ? (
-        <SafeAreaView style={s.ready}>
-          <Text style={s.readyText}>Are you ready for {title}?</Text>
-          <Text style={s.readyText}>Mark yourself as ready!</Text>
-          <Button title="I'm Here" onPress={this.setIsHere} />
-          <SettingsButton onPress={this.showSettings} />
-        </SafeAreaView>
-      ) : meeting.isLive ? (
-        <LiveMeeting
-          allMeetings={allMeetings}
-          currentMeeting={currentMeeting}
-          defaultTopic={topics && topics[meeting.roundIndex]}
-          getCachedUser={this.getCachedUser}
-          getServerTime={this.getServerTime}
-          meeting={meeting}
-          meetings={meetings}
-          topics={topicsForMeeting(currentMeeting)}
-        />
-      ) : (
-        <View style={s.container}>
-          {selectedAttendees.length > 0 && (
-            <PlannedMeetings
-              attendees={selectedAttendees}
-              viewDetails={this.viewAttendeeDetails}
-              primaryColor={primaryColor}
-              slotCount={slotCount}
-              extraData={this.state.c}
-            />
-          )}
-          {attendeesToList.length > 0 && (
-            <AvailableAttendees
-              attendees={attendeesToList}
-              viewDetails={this.viewAttendeeDetails}
-              addMeeting={this.addMeeting}
-              primaryColor={primaryColor}
-              remainingSlotCount={slotCount - selectedAttendees.length}
-              extraData={this.state.c}
-            />
-          )}
-          <SettingsButton onPress={this.showSettings} />
-        </View>
-      )
-
-    const minutes =
-      secondsPerMeeting >= 120
-        ? `${Math.round(secondsPerMeeting / 60)} minutes`
-        : `${secondsPerMeeting} seconds`
-    const helpTexts = [
-      `Magic Hour is a live, face-to-face speed-networking experience designed to get rid of small talk and make sure everyone walks away with at least ${slotCount} new friends`,
-      `Browse through guests’ topics and choose ${slotCount} conversation partners now. You’ll get ${minutes} with each person you choose.`,
-      'If you don’t choose now, you can scan QR codes of people live at the event. However, you might find yourself with a more limited selection of partners. Ready? Set? Choose your partners!',
-    ]
-
+    const { cachedUsers, fbc, pageComponent } = this.props
+    const Page = pageComponent
     return (
       <View style={s.container}>
-        <TitleBar title={title} client={client} signin={this.signin} />
-        {isTopicComplete ? (
-          renderContent()
-        ) : isWelcomeComplete ? (
-          <SafeAreaView style={s.container}>
-            <SetTopic topic={me && me.topic} onSave={this.saveTopic} primaryColor={primaryColor} />
-          </SafeAreaView>
-        ) : (
-          <Welcome
-            dismiss={this.dismissWelcome}
-            primaryColor={primaryColor}
-            helpTexts={helpTexts}
-          />
-        )}
-        <Modal animationType="slide" visible={showSettings}>
-          <SafeAreaView style={s.container}>
-            <SetTopic topic={me && me.topic} onSave={this.saveTopic} primaryColor={primaryColor} />
-          </SafeAreaView>
-        </Modal>
-        <Modal animationType="slide" visible={!!attendeeDetails} onRequestClose={() => {}}>
-          <SafeAreaView style={s.main}>
+        <Page
+          fbc={fbc}
+          cachedUsers={cachedUsers}
+          currentUser={currentUser}
+          primaryColor={primaryColor}
+          addMeeting={this.addMeeting}
+          attendeesToList={attendeesToList}
+          attendeesWithTopics={attendeesWithTopics}
+          getCachedUser={this.getCachedUser}
+          extraData={this.state.c}
+          me={me}
+          meetings={meetings}
+          mutuallyAvailableSlotIndexes={this.mutuallyAvailableSlotIndexes}
+          viewAttendeeDetails={this.viewAttendeeDetails}
+          saveTopic={this.saveTopic}
+          secondsBeforeMeeting={secondsBeforeMeeting}
+          secondsPerMeeting={secondsPerMeeting}
+          slotCount={slotCount}
+          startTime={startTime}
+          topics={topics}
+          requireIsHere={requireIsHere}
+        />
+        <Modal animationType="slide" visible={!!attendeeDetails} style={s.attendeeModal}>
+          <SafeAreaView>
             <AttendeeDetails
-              style={s.modalMain}
               user={attendeeDetails}
               hasMeeting={!!attendeeDetails && Object.values(meetings).includes(attendeeDetails.id)}
+              mutuallyAvailableSlotIndexes={
+                attendeeDetails ? this.mutuallyAvailableSlotIndexes(attendeeDetails.id) : []
+              }
               primaryColor={primaryColor}
               addMeeting={this.addMeeting}
               removeMeeting={this.removeMeeting}
-              dismiss={this.selectNone}
+              dismiss={this.hideAttendeeDetails}
             />
-            <TouchableOpacity style={s.closeButton} onPress={this.selectNone}>
+            <TouchableOpacity style={s.closeButton} onPress={this.hideAttendeeDetails}>
               <Text style={[s.closeButtonText, { color: primaryColor }]}>Close</Text>
             </TouchableOpacity>
           </SafeAreaView>
         </Modal>
       </View>
     )
-  }
-
-  dismissWelcome = () => {
-    this.setState({ isWelcomeComplete: true })
-    setAsyncStorageValue(welcomeCompleteKey, true)
-  }
-
-  saveTopic = ({ topic }) => {
-    this.setState({ isTopicComplete: true, showSettings: false })
-    this.props.fbc.database.public.userRef('topic').set(topic)
-    setAsyncStorageValue(topicCompleteKey, true)
-  }
-
-  selectNone = () => this.viewAttendeeDetails(null)
-
-  showSettings = () => this.setState({ showSettings: true })
-
-  viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
-
-  setIsHere = () => this.props.fbc.database.public.userRef('isHere').set(true)
-
-  addMeeting = (userId, slotIndex) => {
-    const { currentUser } = this.state
-    const { fbc } = this.props
-    fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex })
-    this.setState({ attendeeDetails: null })
-  }
-
-  removeMeeting = userId => {
-    const { allMeetings, currentUser } = this.state
-    const { fbc } = this.props
-    const meeting = allMeetings.find(
-      m => (m.a === currentUser.id && m.b === userId) || (m.a === userId && m.b === currentUser.id),
-    )
-
-    if (meeting)
-      fbc.database.public
-        .allRef('meetings')
-        .child(meeting.id)
-        .remove()
-        .then(() => this.setState({ attendeeDetails: null }))
   }
 
   persistCachedUsers = debounce(() => setAsyncStorageValue(cachedUsersKey, this.cachedUsers), 5000)
@@ -427,54 +352,105 @@ class HomeView extends PureComponent {
     }
     return cached
   }
+
+  addMeeting = (userId, slotIndex) => {
+    const { currentUser } = this.state
+    const { fbc } = this.props
+    fbc.database.public.allRef('meetings').push({ a: currentUser.id, b: userId, slotIndex })
+  }
+
+  removeMeeting = userId => {
+    const { allMeetings, currentUser } = this.state
+    const { fbc } = this.props
+    const meeting = allMeetings.find(
+      m => (m.a === currentUser.id && m.b === userId) || (m.a === userId && m.b === currentUser.id),
+    )
+
+    if (meeting)
+      fbc.database.public
+        .allRef('meetings')
+        .child(meeting.id)
+        .remove()
+  }
+
+  dismissWelcome = () => {
+    this.setState({ isWelcomeComplete: true })
+    setAsyncStorageValue(welcomeCompleteKey, true)
+  }
+
+  saveTopic = ({ topic }) => {
+    this.setState({ isTopicComplete: true, showSettings: false })
+    this.props.fbc.database.public.userRef('topic').set(topic)
+    setAsyncStorageValue(topicCompleteKey, true)
+  }
+
+  viewAttendeeDetails = attendeeDetails => this.setState({ attendeeDetails })
+
+  hideAttendeeDetails = () => this.viewAttendeeDetails(null)
+
+  mutuallyAvailableSlotIndexes = otherId => {
+    const { allMeetings, currentUser, slotCount } = this.state
+    const ourMeetings = allMeetings.filter(
+      m => m.a === currentUser.id || m.b === currentUser.id || m.a === otherId || m.b === otherId,
+    )
+
+    // If we already have a meeting set with this attendee, don't show that we can schedule another slot.
+    if (
+      ourMeetings.find(
+        m =>
+          (m.a === currentUser.id && m.b === otherId) ||
+          (m.a === otherId && m.b === currentUser.id),
+      )
+    ) {
+      return []
+    }
+
+    const available = []
+    for (let i = 0; i < slotCount; ++i) {
+      if (!ourMeetings.find(m => m.slotIndex === i)) available.push(i)
+    }
+
+    return available
+  }
 }
 
-const SettingsButton = ({ onPress }) => (
-  <TouchableOpacity onPress={onPress} style={s.settingsButton}>
-    <Text style={s.settingsGear}>⚙️</Text>
-  </TouchableOpacity>
+const cachedUsersKey = 'magichour_cachedUsers'
+const welcomeCompleteKey = 'magichour_welcomeComplete'
+const topicCompleteKey = 'magichour_topicComplete'
+
+const getAsyncStorageValue = async key =>
+  AsyncStorage.getItem(key).then(val => (val ? JSON.parse(val) : null))
+const setAsyncStorageValue = async (key, value) => AsyncStorage.setItem(key, JSON.stringify(value))
+
+const Loading = () => (
+  <View style={s.loading}>
+    <Text>Loading...</Text>
+  </View>
 )
 
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#d9e1f9',
+    backgroundColor: '#f8f8f8',
   },
-  main: {
+  loading: {
     flex: 1,
-  },
-  modalMain: {
-    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   closeButton: {
     padding: 10,
     marginBottom: 20,
+    fontFamily,
   },
   closeButtonText: {
     fontSize: 24,
     textAlign: 'center',
     color: '#fff',
+    fontFamily,
   },
-  ready: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  readyText: {
-    fontSize: 24,
-    margin: 10,
-    textAlign: 'center',
-  },
-  settingsButton: {
-    zIndex: 1,
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    padding: 10,
-  },
-  settingsGear: {
-    fontSize: 30,
-    backgroundColor: 'transparent',
+  attendeeModal: {
+    backgroundColor: '#f8f8f8',
   },
 })
 

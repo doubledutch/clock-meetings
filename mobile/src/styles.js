@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import { AppRegistry, YellowBox } from 'react-native'
-import HomeView from './src/HomeView'
+import { Platform } from 'react-native'
 
-if (YellowBox)
-  YellowBox.ignoreWarnings([
-    'Warning: Async Storage has been extracted',
-    'Warning: WebView has been extracted',
-    'Warning: View.propTypes has been deprecated',
-  ])
-AppRegistry.registerComponent('magichour', () => HomeView)
-AppRegistry.registerComponent('section', () => HomeView)
+export const charcoalGray = '#364347'
+export const lightGray = '#adadad'
+export const fontFamily = Platform.select({ ios: 'System', android: 'Roboto' })
+export const bold = '500'

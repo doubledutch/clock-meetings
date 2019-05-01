@@ -15,10 +15,20 @@
  */
 
 import React from 'react'
-import { SafeAreaView as SAV, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  Dimensions,
+  Image,
+  SafeAreaView as SAV,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { Avatar, Color } from '@doubledutch/rn-client'
 
 import Timer from './Timer'
+import { charcoalGray, fontFamily, bold } from './styles'
+import vr from './images/vr.png.js'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
@@ -31,33 +41,41 @@ function sortMeetings(m1, m2) {
   return 0
 }
 
-const rainbowColor = x => new Color({ h: -x, s: 1, v: 0.8 }).rgbString()
+const rainbowColor = x => new Color({ h: -x, s: 0.7, v: 0.85 }).rgbString()
+
+const nameSize = user => {
+  if (!user) return { fontSize: 43 }
+  const maxLength = Math.max(
+    user.firstName ? user.firstName.length : 1,
+    user.lastName ? user.lastName.length : 1,
+  )
+  const fontSize = Math.min(330 / maxLength, 43)
+  return { fontSize }
+}
 
 export default ({
   allMeetings,
   currentMeeting,
-  defaultTopic,
   getCachedUser,
   getServerTime,
   meeting,
   meetings,
-  topics,
+  topic,
 }) => {
   const currentMeetingUserId = meetings[meeting.roundIndex]
   if (!currentMeetingUserId) {
+    const height = Dimensions.get('window').height * 0.3
+    const vrSize = { height, width: height * (147 / 247) }
     return (
       <View style={s.outer}>
-        <SafeAreaView style={s.inner}>
-          {meeting.isBreak ? (
-            <Text style={s.round}>Break</Text>
-          ) : (
-            <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
-          )}
+        <View style={s.breakDetail}>
+          <Text style={s.round}>Break time!</Text>
 
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
           <Text style={s.instructions}>Take a break!</Text>
           <Text style={s.instructions}>You have nothing scheduled this round.</Text>
-        </SafeAreaView>
+        </View>
+        <Image source={vr} style={[s.vr, vrSize]} />
       </View>
     )
   }
@@ -76,49 +94,32 @@ export default ({
     backgroundColor: rainbowColor(orderIndex / meetingsThisRound.length),
   }
 
+  const footerText = meeting.isBreak
+    ? 'Look for your next talking partner to have the same Number and Color on their phone.'
+    : 'Talk with your partner who has the same Number and Color on their phone.'
   return (
     <ScrollView style={[s.outer, background]}>
       <SafeAreaView style={s.inner}>
-        <Text style={s.number}>{orderIndex + 1}</Text>
-        <Avatar user={otherUser} size={150} roundedness={0.6} />
-        <Text style={s.name} key="name">
-          {otherUser.firstName} {otherUser.lastName}
-        </Text>
-        {meeting.isBreak ? (
-          [
-            <Text style={s.instructions} key="find">
-              Find {otherUser.firstName} for the upcoming round.
-            </Text>,
-            <Text style={s.instructions} key="same">
-              Their screen will have the same color and number.
-            </Text>,
-          ]
-        ) : (
-          <Text style={s.round}>Round {meeting.roundIndex + 1}</Text>
-        )}
-        <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
-        {!meeting.isBreak &&
-          (topics.length > 0 ? (
-            <View style={s.topics}>
-              <Text style={s.instructions}>Your topics:</Text>
-              {topics.map(t => (
-                <Text style={s.topic} key={t}>
-                  {t}
+        <View style={s.top}>
+          <View style={s.numbers}>
+            <Text style={s.number}>{orderIndex + 1}</Text>
+            <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.liveTimer} />
+          </View>
+          <View style={s.card}>
+            <View style={s.row}>
+              <Avatar user={otherUser} size={150} roundedness={0.15} />
+              <View style={s.userDetail}>
+                <Text style={[s.name, nameSize(otherUser)]} key="name">
+                  {otherUser.firstName} {otherUser.lastName}
                 </Text>
-              ))}
-            </View>
-          ) : (
-            !!defaultTopic && (
-              <View style={s.topics}>
-                <Text style={s.instructions}>Your topics:</Text>
-                {topics.map(t => (
-                  <Text style={s.topic} key={t}>
-                    {t}
-                  </Text>
-                ))}
+                <Text style={s.title}>{otherUser.title}</Text>
               </View>
-            )
-          ))}
+            </View>
+            <Text style={s.topicTitle}>Topic:</Text>
+            <Text style={s.topic}>{topic}</Text>
+          </View>
+        </View>
+        <Text style={s.footer}>{footerText}</Text>
       </SafeAreaView>
     </ScrollView>
   )
@@ -127,48 +128,103 @@ export default ({
 const s = StyleSheet.create({
   outer: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: '#f8f8f8',
+    paddingTop: 22,
+    paddingHorizontal: 16,
+    paddingBottom: 11,
   },
-  inner: {
+  top: { flex: 1 },
+  breakDetail: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 70,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 16,
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  userDetail: {
+    paddingLeft: 12,
+    flex: 1,
+  },
+  name: {
+    fontFamily,
+    fontSize: 43,
+    fontWeight: '500',
+    color: charcoalGray,
+  },
+  title: {
+    fontFamily,
+    fontSize: 21,
+    color: charcoalGray,
   },
   round: {
     fontSize: 32,
-    color: 'white',
+    color: charcoalGray,
+    fontFamily,
     marginBottom: 10,
   },
   timer: {
-    fontSize: 60,
-    color: 'white',
+    fontSize: 72,
+    color: charcoalGray,
+    fontFamily,
+    fontWeight: '600',
     marginVertical: 20,
+  },
+  liveTimer: {
+    fontSize: 40,
+    color: 'white',
+    fontFamily,
+    fontWeight: '500',
   },
   instructions: {
     fontSize: 18,
-    color: 'white',
+    color: charcoalGray,
+    fontFamily,
     textAlign: 'center',
     marginVertical: 5,
   },
-  name: {
-    fontSize: 24,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: 5,
+  numbers: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 15,
   },
   number: {
-    fontSize: 100,
-    fontWeight: 'bold',
+    fontSize: 72,
+    fontWeight: '600',
     color: 'white',
-    textAlign: 'center',
-    marginVertical: 15,
+    fontFamily,
+    marginTop: 15,
   },
-  topics: {
-    marginHorizontal: 10,
+  topicTitle: {
+    fontSize: 29,
+    fontFamily,
+    marginVertical: 5,
+    color: charcoalGray,
+    fontWeight: bold,
   },
   topic: {
-    fontSize: 14,
-    marginVertical: 5,
+    fontSize: 29,
+    fontFamily,
+    color: charcoalGray,
+  },
+  footer: {
+    fontSize: 19,
+    fontFamily,
     color: 'white',
+    textAlign: 'center',
+    marginTop: 30,
+  },
+  vr: {
+    position: 'absolute',
+    bottom: 15,
+    left: 35,
+    zIndex: 1,
+    resizeMode: 'contain',
   },
 })

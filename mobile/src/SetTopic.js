@@ -14,50 +14,115 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { KeyboardAvoidingView, Platform, StyleSheet, Text } from 'react-native'
+import React, { PureComponent } from 'react'
+import { Animated, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
 import Button from './Button'
 import { formWithSave, TextInputWithDraft } from './Forms'
+import { charcoalGray, fontFamily } from './styles'
 
 const kavBehavior = Platform.select({ ios: 'padding', android: null })
-export default formWithSave(['topic'], ({ fieldSet, save, primaryColor }) => (
-  <KeyboardAvoidingView style={s.container} behavior={kavBehavior}>
-    <Text style={s.instructions}>
-      Set or change the question you want to talk about during Magic Hour! No small talk, go for the
-      deep questions (other guests select you based on the depth of your questions).
-    </Text>
+export default formWithSave(['topic'], ({ fieldSet, save, primaryColor, otherTopics }) => (
+  <KeyboardAvoidingView behavior={kavBehavior}>
     <TextInputWithDraft
       fieldSet={fieldSet}
       prop="topic"
       style={s.input}
       multiline
-      placeholder="e.g. How do you define a life well-lived?"
+      placeholder="Deep questions value other people and create empathy. No small talk!"
     />
-    <Button text="SAVE" onPress={save} color={primaryColor} style={s.button} />
+    <OtherTopics topics={otherTopics} />
+    <Button
+      text="Save Topic"
+      onPress={save}
+      color={primaryColor}
+      style={s.button}
+      disabled={!fieldSet.isDirty()}
+    />
   </KeyboardAvoidingView>
 ))
 
+const OtherTopics = ({ topics }) => (
+  <View>
+    {topics.length > 0 && (
+      <Text style={s.wondering}>
+        Wondering what question to ask? Here are some recently submitted by other people:
+      </Text>
+    )}
+    <TextCarousel texts={topics} numberOfLines={3} style={s.carousel} />
+  </View>
+)
+
+class TextCarousel extends PureComponent {
+  state = { index: 0, fadeAnim: new Animated.Value(0) }
+
+  componentDidMount() {
+    const ms = 6000
+    const fadeMs = 300
+    this.interval = setInterval(() => this.setState(({ index }) => ({ index: index + 1 })), ms)
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(this.state.fadeAnim, {
+          toValue: 1,
+          duration: fadeMs,
+          useNativeDriver: true,
+        }),
+        Animated.delay(ms - fadeMs * 2),
+        Animated.timing(this.state.fadeAnim, {
+          toValue: 0,
+          duration: fadeMs,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start()
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval)
+  }
+
+  render() {
+    const { style, texts, numberOfLines } = this.props
+    const { fadeAnim } = this.state
+    if (texts.length === 0) return null
+    const index = this.state.index % texts.length
+
+    const fadeStyle = texts.length > 1 ? { opacity: fadeAnim } : null
+
+    return (
+      <Animated.Text style={[style, fadeStyle]} numberOfLines={numberOfLines}>
+        {texts[index]}
+      </Animated.Text>
+    )
+  }
+}
+
 const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  instructions: {
-    padding: 10,
-    paddingTop: 50, // Hack to get around the fact that React Native 0.46 doesn't support SafeAreaView
-    fontSize: 16,
-  },
   input: {
     fontSize: 16,
-    flex: 1,
-    backgroundColor: 'white',
-    padding: 10,
-    marginVertical: 10,
+    height: 105,
+    backgroundColor: '#f8f8f8',
+    padding: 12,
+    paddingTop: 12,
     borderWidth: 1,
+    borderRadius: 4,
     borderColor: '#ccc',
+    color: charcoalGray,
   },
   button: {
-    margin: 10,
-    marginBottom: 80,
+    marginTop: 10,
+  },
+  wondering: {
+    fontSize: 16,
+    color: charcoalGray,
+    fontFamily,
+    marginVertical: 7,
+    fontWeight: 'bold',
+  },
+  carousel: {
+    height: 58,
+    fontSize: 16,
+    color: charcoalGray,
+    fontFamily,
+    textAlignVertical: 'center',
   },
 })
