@@ -179,6 +179,7 @@ const s = StyleSheet.create({
     backgroundColor: 'white',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    marginBottom: 5,
   },
   buddyDetails: {
     flex: 1,

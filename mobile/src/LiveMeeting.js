@@ -219,6 +219,7 @@ const s = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     marginTop: 30,
+    marginBottom: 40,
   },
   vr: {
     position: 'absolute',
