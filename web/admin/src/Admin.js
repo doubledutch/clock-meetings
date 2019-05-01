@@ -127,7 +127,6 @@ export default class Admin extends PureComponent {
               maxLength={100}
               value={finalCTAText}
               onChange={this.updatePublicText('finalCTAText')}
-              disabled={meeting.isLive}
               placeholder="Take our survey"
             />
           </label>
@@ -139,7 +138,6 @@ export default class Admin extends PureComponent {
               maxLength={100}
               value={finalCTA}
               onChange={this.updatePublicText('finalCTA')}
-              disabled={meeting.isLive}
               placeholder="dd://extensions/surveys?surveyID=abcd"
             />
           </label>
