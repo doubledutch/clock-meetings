@@ -15,13 +15,22 @@
  */
 
 import React from 'react'
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import {
+  Dimensions,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
 import { charcoalGray, bold, fontFamily } from './styles'
 import Button from './Button'
 
 const getId = x => x.id
 const selectedSize = 68
+const meetingsHorizontalPadding = 16
 
 const SelectPeople = ({
   addMeeting,
@@ -58,21 +67,36 @@ const SelectPeople = ({
     )
   }
 
+  const { width } = Dimensions.get('window')
+  const slotSpacing =
+    slots.length <= 1
+      ? null
+      : {
+          marginRight: Math.max(
+            10,
+            (width - meetingsHorizontalPadding * 2 - slots.length * selectedSize) /
+              (slots.length - 1),
+          ),
+        }
+
   return (
     <View style={s.container}>
       <View style={s.meetings}>
         <Text style={s.title}>Who you&apos;ll be meeting with:</Text>
-        <View style={s.meetingAvatars}>
-          {slots.map((m, i) =>
-            m ? (
-              <TouchableOpacity key={m.id} onPress={viewAttendee(m)}>
-                <Avatar client={client} user={m} size={selectedSize} roundedness={0.4} />
-              </TouchableOpacity>
-            ) : (
-              <NoUser key={i} />
-            ),
-          )}
-        </View>
+        <ScrollView horizontal>
+          <View style={s.meetingAvatars}>
+            {slots.map((m, i) => {
+              const style = i < slots.length - 1 ? slotSpacing : null
+              return m ? (
+                <TouchableOpacity key={m.id} onPress={viewAttendee(m)} style={style}>
+                  <Avatar client={client} user={m} size={selectedSize} roundedness={0.35} />
+                </TouchableOpacity>
+              ) : (
+                <NoUser key={i} style={style} />
+              )
+            })}
+          </View>
+        </ScrollView>
       </View>
       <FlatList
         data={attendeesToList}
@@ -87,8 +111,8 @@ const SelectPeople = ({
   )
 }
 
-const NoUser = () => (
-  <View style={s.noUser}>
+const NoUser = ({ style }) => (
+  <View style={[s.noUser, style]}>
     <Text style={s.noUserText}>?</Text>
   </View>
 )
@@ -100,7 +124,6 @@ export default SelectPeople
 const s = StyleSheet.create({
   container: { flex: 1 },
   meetings: {
-    paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
     shadowColor: 'black',
@@ -109,12 +132,18 @@ const s = StyleSheet.create({
     shadowRadius: 50,
     elevation: 1,
   },
-  meetingAvatars: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 8 },
+  meetingAvatars: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    paddingHorizontal: meetingsHorizontalPadding,
+  },
   title: {
     fontFamily,
     fontSize: 19,
     fontWeight: '600',
     color: charcoalGray,
+    paddingHorizontal: meetingsHorizontalPadding,
   },
   noUser: {
     height: selectedSize,
