@@ -25,7 +25,7 @@ import {
   View,
 } from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
-import { charcoalGray, bold, fontFamily } from './styles'
+import { bold, charcoalGray, fontFamily, lightGray } from './styles'
 import Button from './Button'
 
 const getId = x => x.id
@@ -79,6 +79,13 @@ const SelectPeople = ({
           ),
         }
 
+  const Footer = () =>
+    attendeesToList.length === 0 ? (
+      <Text style={s.footer}>Check back soon as more people join.</Text>
+    ) : (
+      Separator
+    )
+
   return (
     <View style={s.container}>
       <View style={s.meetings}>
@@ -104,7 +111,7 @@ const SelectPeople = ({
         renderItem={renderAvailable}
         ItemSeparatorComponent={Separator}
         ListHeaderComponent={Separator}
-        ListFooterComponent={Separator}
+        ListFooterComponent={Footer}
         keyExtractor={getId}
       />
     </View>
@@ -124,6 +131,7 @@ export default SelectPeople
 const s = StyleSheet.create({
   container: { flex: 1 },
   meetings: {
+    backgroundColor: 'white',
     paddingTop: 8,
     paddingBottom: 12,
     shadowColor: 'black',
@@ -162,6 +170,7 @@ const s = StyleSheet.create({
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   details: {
     flex: 1,
@@ -183,4 +192,13 @@ const s = StyleSheet.create({
   },
   add: { paddingHorizontal: 19 },
   separator: { height: 1, backgroundColor: '#dedede' },
+  footer: {
+    borderColor: '#dedede',
+    borderBottomWidth: 1,
+    padding: 20,
+    color: lightGray,
+    fontStyle: 'italic',
+    fontFamily,
+    fontSize: 16,
+  },
 })
