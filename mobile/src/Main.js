@@ -95,9 +95,11 @@ const Main = ({
             />
           )
         })}
-        <Link to="/select" style={s.add}>
-          <Button text="Add a Person +" color={primaryColor} secondary wrapper={View} />
-        </Link>
+        {openSlots > 0 && (
+          <Link to="/select" style={s.add}>
+            <Button text="Add a Person +" color={primaryColor} secondary wrapper={View} />
+          </Link>
+        )}
       </View>
     </ScrollView>
   )
