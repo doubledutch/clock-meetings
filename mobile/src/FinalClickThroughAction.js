@@ -15,16 +15,18 @@
  */
 
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import client from '@doubledutch/rn-client'
 import Button from './Button'
+import { charcoalGray, fontFamily } from './styles'
 
 export default ({ exit, link, primaryColor, text }) => {
   const go = () => client.openURL(link)
   return (
     <View style={s.container}>
-      <Button text={text} color={primaryColor} onPress={go} />
-      <Button text="Done" color={primaryColor} onPress={exit} secondary style={s.done} />
+      <Text style={s.text}>{text}</Text>
+      <Button text="Let's GO!" color={primaryColor} onPress={go} />
+      {/* <Button text="Done" color={primaryColor} onPress={exit} secondary style={s.done} /> */}
     </View>
   )
 }
@@ -35,6 +37,13 @@ const s = StyleSheet.create({
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  text: {
+    marginBottom: 20,
+    textAlign: 'center',
+    fontFamily,
+    fontSize: 22,
+    color: charcoalGray,
   },
   done: {
     marginTop: 20,
