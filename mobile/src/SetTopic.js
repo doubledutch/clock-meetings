@@ -48,7 +48,7 @@ const OtherTopics = ({ topics }) => (
         Wondering what question to ask? Here are some recently submitted by other people:
       </Text>
     )}
-    <TextCarousel texts={topics} numberOfLines={3} style={s.carousel} />
+    <TextCarousel texts={topics} numberOfLines={4} style={s.carousel} />
   </View>
 )
 
@@ -120,7 +120,7 @@ const s = StyleSheet.create({
     fontWeight: 'bold',
   },
   carousel: {
-    minHeight: 64,
+    minHeight: 80,
     fontSize: 16,
     color: charcoalGray,
     fontFamily,
