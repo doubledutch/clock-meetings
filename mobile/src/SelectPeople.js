@@ -83,7 +83,7 @@ const SelectPeople = ({
     attendeesToList.length === 0 ? (
       <Text style={s.footer}>Check back soon as more people join.</Text>
     ) : (
-      Separator
+      <Separator />
     )
 
   return (
