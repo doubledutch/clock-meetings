@@ -107,7 +107,7 @@ export default ({
           </View>
           <View style={s.card}>
             <View style={s.row}>
-              <Avatar user={otherUser} size={150} roundedness={0.15} />
+              <Avatar user={otherUser} size={140} roundedness={0.15} />
               <View style={s.userDetail}>
                 <Text style={[s.name, nameSize(otherUser)]} key="name">
                   {otherUser.firstName} {otherUser.lastName}
