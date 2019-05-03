@@ -120,14 +120,14 @@ export default class Admin extends PureComponent {
         </label>
         <div className="horizontal space-children">
           <label>
-            Final call to action:
+            Final call to action (mobile &amp; big screen):
             <input
               className="cta"
               type="text"
               maxLength={100}
               value={finalCTAText}
               onChange={this.updatePublicText('finalCTAText')}
-              placeholder="Take our survey"
+              placeholder="What did you think? Take the survey now"
             />
           </label>
           <label>
