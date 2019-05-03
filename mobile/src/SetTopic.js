@@ -120,7 +120,7 @@ const s = StyleSheet.create({
     fontWeight: 'bold',
   },
   carousel: {
-    height: 58,
+    minHeight: 64,
     fontSize: 16,
     color: charcoalGray,
     fontFamily,
