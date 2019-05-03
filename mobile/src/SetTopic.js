@@ -22,7 +22,7 @@ import { charcoalGray, fontFamily } from './styles'
 
 const kavBehavior = Platform.select({ ios: 'padding', android: null })
 export default formWithSave(['topic'], ({ fieldSet, save, primaryColor, otherTopics }) => (
-  <KeyboardAvoidingView behavior={kavBehavior}>
+  <KeyboardAvoidingView behavior={kavBehavior} style={s.container}>
     <TextInputWithDraft
       fieldSet={fieldSet}
       prop="topic"
@@ -36,7 +36,7 @@ export default formWithSave(['topic'], ({ fieldSet, save, primaryColor, otherTop
       onPress={save}
       color={primaryColor}
       style={s.button}
-      disabled={!fieldSet.isDirty()}
+      disabled={!fieldSet.getValue('topic')}
     />
   </KeyboardAvoidingView>
 ))
@@ -97,6 +97,7 @@ class TextCarousel extends PureComponent {
 }
 
 const s = StyleSheet.create({
+  container: { marginTop: 8 },
   input: {
     fontSize: 16,
     height: 105,

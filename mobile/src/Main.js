@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
 import { Link } from './NavStackRouter'
@@ -36,6 +36,13 @@ const Main = ({
   slotCount,
   viewAttendeeDetails,
 }) => {
+  const [forceEditingTopic, setForceEditingTopic] = useState(false)
+  const editTopic = () => setForceEditingTopic(true)
+  const saveTopicAndStopEditing = topic => {
+    saveTopic(topic)
+    setForceEditingTopic(false)
+  }
+
   const filledMeetings = meetings.filter(x => x)
   const openSlots = slotCount > filledMeetings.length ? slotCount - filledMeetings.length : 0
 
@@ -49,19 +56,34 @@ const Main = ({
   return (
     <ScrollView style={s.container}>
       <View style={s.you}>
-        <View style={s.row}>
+        <View style={[s.row, s.youRow]}>
           <Avatar user={currentUser} size={62} roundedness={0.5} client={client} />
           <Text style={s.yourName}>
             {currentUser.firstName} {currentUser.lastName}
           </Text>
         </View>
         <Text style={s.yourTopic}>Your Topic:</Text>
-        <SetTopic
-          topic={me && me.topic}
-          onSave={saveTopic}
-          primaryColor={primaryColor}
-          otherTopics={otherTopics}
-        />
+        {me && me.topic && !forceEditingTopic ? (
+          <View>
+            <Text style={s.yourTopic} numberOfLines={2}>
+              {me.topic}
+            </Text>
+            <Button
+              color={primaryColor}
+              text="Edit Topic"
+              style={s.editTopic}
+              textStyle={s.bold}
+              onPress={editTopic}
+            />
+          </View>
+        ) : (
+          <SetTopic
+            topic={me && me.topic}
+            onSave={saveTopicAndStopEditing}
+            primaryColor={primaryColor}
+            otherTopics={otherTopics}
+          />
+        )}
       </View>
       <View style={s.slots}>
         <View style={[s.row, s.youHaveContainer]}>
@@ -124,6 +146,8 @@ const Meeting = ({ buddy, topic, numberOfLines, onPress }) => (
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+  bold: { fontWeight: '600' },
+  editTopic: { padding: 10, marginTop: 12 },
   row: { flexDirection: 'row', alignItems: 'center' },
   you: {
     backgroundColor: 'white',
@@ -133,6 +157,9 @@ const s = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 50,
     elevation: 1,
+  },
+  youRow: {
+    marginBottom: 16,
   },
   yourName: {
     marginLeft: 14,
@@ -151,8 +178,7 @@ const s = StyleSheet.create({
     color: charcoalGray,
     fontFamily,
     fontSize: 19,
-    marginTop: 16,
-    marginBottom: 11,
+    marginBottom: 3,
   },
   buddyTopic: {
     color: charcoalGray,

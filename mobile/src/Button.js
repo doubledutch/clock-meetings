@@ -18,7 +18,17 @@ import React from 'react'
 import { StyleSheet, Text, TouchableOpacity } from 'react-native'
 import { bold, fontFamily } from './styles'
 
-export default ({ children, color, disabled, secondary, onPress, style, text, wrapper }) => {
+export default ({
+  children,
+  color,
+  disabled,
+  secondary,
+  onPress,
+  style,
+  text,
+  textStyle,
+  wrapper,
+}) => {
   const buttonStyle = secondary
     ? disabled
       ? { backgroundColor: 'white', borderColor: '#ccc' }
@@ -27,12 +37,12 @@ export default ({ children, color, disabled, secondary, onPress, style, text, wr
     ? s.disabled
     : { backgroundColor: color, borderColor: color }
 
-  const textStyle = secondary ? { color: disabled ? '#ccc' : color } : null
+  const textColor = secondary ? { color: disabled ? '#ccc' : color } : null
   const Wrapper = wrapper || TouchableOpacity
   return (
     <Wrapper onPress={onPress} disabled={disabled} style={[s.button, style, buttonStyle]}>
       {children}
-      <Text style={[s.buttonText, textStyle]}>
+      <Text style={[s.buttonText, textColor, textStyle]}>
         {children ? ' ' : ''}
         {text}
       </Text>
