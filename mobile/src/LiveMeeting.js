@@ -95,8 +95,8 @@ export default ({
   }
 
   const footerText = meeting.isBreak
-    ? 'Look for your next talking partner to have the same Number and Color on their phone.'
-    : 'Talk with your partner who has the same Number and Color on their phone.'
+    ? "Find your next Magic Hour conversation partner; they'll have the same COLOR and BIG NUMBER on their screen!"
+    : 'Talk with your partner who has the same COLOR and BIG NUMBER on their screen.'
   return (
     <ScrollView style={[s.outer, background]}>
       <SafeAreaView style={s.inner}>
