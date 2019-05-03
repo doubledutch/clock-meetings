@@ -19,17 +19,23 @@ import React, { PureComponent } from 'react'
 import Timer from './Timer'
 
 export default class BigScreen extends PureComponent {
-  state = {}
+  state = { finalCTAText: null }
 
-  componentDidMount() {}
+  componentDidMount() {
+    const { fbc } = this.props
+    fbc.database.public
+      .adminRef('finalCTAText')
+      .on('value', data => this.setState({ finalCTAText: data.val() }))
+  }
 
   render() {
     const { getServerTime, meeting, meetings } = this.props
+    const { finalCTAText } = this.state
     if (!meeting.isLive) {
       return (
         <div className="big-screen">
           {this.wasLive ? (
-            <div className="big-screen__timer">0:00</div>
+            <div className="big-screen__timer">{finalCTAText || '0:00'}</div>
           ) : (
             <div className="big-screen__start">Start Magic Hour from the CMS</div>
           )}
