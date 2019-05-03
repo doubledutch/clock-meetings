@@ -266,7 +266,12 @@ class Root extends PureComponent {
       )
     }
 
-    if (meeting.isMagicHourFinished && finalCTAText && finalCTA && !dismissedFinalCTA) {
+    if (
+      meeting.isMagicHourFinished &&
+      finalCTAText &&
+      finalCTA &&
+      dismissedFinalCTA !== startTime
+    ) {
       return (
         <FinalClickThroughAction
           text={finalCTAText}
@@ -439,7 +444,7 @@ class Root extends PureComponent {
     return available
   }
 
-  exitFinalCTA = () => this.setState({ dismissedFinalCTA: true })
+  exitFinalCTA = () => this.setState(({ startTime }) => ({ dismissedFinalCTA: startTime }))
 }
 
 const cachedUsersKey = 'magichour_cachedUsers'
