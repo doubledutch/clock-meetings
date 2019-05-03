@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react'
+import React, { PureComponent } from 'react'
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import client, { Avatar } from '@doubledutch/rn-client'
 import { Link } from './NavStackRouter'
@@ -36,19 +36,8 @@ const Main = ({
   slotCount,
   viewAttendeeDetails,
 }) => {
-  const [forceEditingTopic, setForceEditingTopic] = useState(false)
-  const editTopic = () => setForceEditingTopic(true)
-  const saveTopicAndStopEditing = topic => {
-    saveTopic(topic)
-    setForceEditingTopic(false)
-  }
-
   const filledMeetings = meetings.filter(x => x)
   const openSlots = slotCount > filledMeetings.length ? slotCount - filledMeetings.length : 0
-
-  const otherTopics = Object.values(attendeesWithTopics)
-    .filter(x => x.id !== me.id)
-    .map(x => x.topic)
 
   const buddyOpener = attendee => () => viewAttendeeDetails(attendee)
   const setIsHere = () => fbc.database.public.userRef('isHere').set(true)
@@ -63,27 +52,12 @@ const Main = ({
           </Text>
         </View>
         <Text style={s.yourTopic}>Your Topic:</Text>
-        {me && me.topic && !forceEditingTopic ? (
-          <View>
-            <Text style={s.yourTopic} numberOfLines={2}>
-              {me.topic}
-            </Text>
-            <Button
-              color={primaryColor}
-              text="Edit Topic"
-              style={s.editTopic}
-              textStyle={s.bold}
-              onPress={editTopic}
-            />
-          </View>
-        ) : (
-          <SetTopic
-            topic={me && me.topic}
-            onSave={saveTopicAndStopEditing}
-            primaryColor={primaryColor}
-            otherTopics={otherTopics}
-          />
-        )}
+        <Topic
+          attendeesWithTopics={attendeesWithTopics}
+          me={me}
+          primaryColor={primaryColor}
+          saveTopic={saveTopic}
+        />
       </View>
       <View style={s.slots}>
         <View style={[s.row, s.youHaveContainer]}>
@@ -125,6 +99,50 @@ const Main = ({
       </View>
     </ScrollView>
   )
+}
+
+class Topic extends PureComponent {
+  state = { forceEdit: false }
+
+  editTopic = () => this.setState({ forceEdit: true })
+
+  saveTopic = topic => {
+    this.props.saveTopic(topic)
+    this.setState({ forceEdit: false })
+  }
+
+  render() {
+    const { attendeesWithTopics, me, primaryColor } = this.props
+    const otherTopics = Object.values(attendeesWithTopics)
+      .filter(x => x.id !== me.id)
+      .map(x => x.topic)
+
+    if (me && me.topic && !this.state.forceEdit) {
+      return (
+        <View>
+          <Text style={s.yourTopic} numberOfLines={2}>
+            {me.topic}
+          </Text>
+          <Button
+            color={primaryColor}
+            text="Edit Topic"
+            style={s.editTopic}
+            textStyle={s.bold}
+            onPress={this.editTopic}
+          />
+        </View>
+      )
+    }
+
+    return (
+      <SetTopic
+        topic={me && me.topic}
+        onSave={this.saveTopic}
+        primaryColor={primaryColor}
+        otherTopics={otherTopics}
+      />
+    )
+  }
 }
 
 export default Main
