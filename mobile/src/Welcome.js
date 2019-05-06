@@ -57,7 +57,7 @@ const Welcome1 = ({ helpText, primaryColor, advance }) => (
 const Welcome2 = ({ helpText, primaryColor, advance }) => (
   <View style={s.container}>
     <ScrollView style={s.scroll}>
-      <Text style={[s.h2, s.center]}>How it works.</Text>
+      <Text style={[s.h2, s.center]}>How it Works</Text>
       <Image source={peopleOnPhones} style={[s.image, s.image2]} />
       <Text style={s.h3}>{helpText}</Text>
     </ScrollView>
@@ -85,7 +85,7 @@ export default class Welcome extends PureComponent {
         : `${secondsPerMeeting} seconds`
     const helpTexts = [
       `Magic Hour is a live, face-to-face networking experience designed to make sure everyone walks away with ${slotCount} new friends`,
-      `Browse through guests’ topics and select people you’d like to talk with. You’ll have ${time} with each person and can edit your time slots until 10 minutes beforehand.`,
+      `Browse through guests’ topics and select people you’d like to talk with. You’ll have ${time} with each person face-to-face, the day of the event.`,
     ]
 
     return (
