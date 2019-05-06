@@ -43,8 +43,10 @@ const SelectPeople = ({
   slotCount,
 }) => {
   const slots = []
+  let scheduledCount = 0
   for (let i = 0; i < slotCount; ++i) {
     const id = meetings[i]
+    if (id) ++scheduledCount
     slots[i] = id ? { ...attendeesWithTopics[id], ...getCachedUser(id), id } : null
   }
 
@@ -81,7 +83,11 @@ const SelectPeople = ({
 
   const Footer = () =>
     attendeesToList.length === 0 ? (
-      <Text style={s.footer}>Check back soon as more people join.</Text>
+      slotCount > scheduledCount ? (
+        <Text style={s.footer}>Check back soon as more people join.</Text>
+      ) : (
+        <Text style={s.footer}>Congrats, your schedule is full! </Text>
+      )
     ) : (
       <Separator />
     )

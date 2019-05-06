@@ -93,7 +93,7 @@ const Main = ({
         })}
         {openSlots > 0 && (
           <Link to="/select" style={s.add}>
-            <Button text="Add a Person +" color={primaryColor} secondary wrapper={View} />
+            <Button text="Add People +" color={primaryColor} secondary wrapper={View} />
           </Link>
         )}
       </View>
