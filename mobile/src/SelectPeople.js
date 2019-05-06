@@ -27,10 +27,19 @@ import {
 import client, { Avatar } from '@doubledutch/rn-client'
 import { bold, charcoalGray, fontFamily, lightGray } from './styles'
 import Button from './Button'
+import Main from './Main'
 
 const getId = x => x.id
 const selectedSize = 68
 const meetingsHorizontalPadding = 16
+
+const SelectPeopleUnlessFull = props => {
+  const { meetings, slotCount } = props
+  const filledMeetings = meetings.filter(x => x)
+  const openSlots = slotCount > filledMeetings.length ? slotCount - filledMeetings.length : 0
+  if (openSlots > 0) return <SelectPeople {...props} />
+  return <Main {...props} />
+}
 
 const SelectPeople = ({
   addMeeting,
@@ -132,7 +141,7 @@ const NoUser = ({ style }) => (
 
 const Separator = () => <View style={s.separator} />
 
-export default SelectPeople
+export default SelectPeopleUnlessFull
 
 const s = StyleSheet.create({
   container: { flex: 1 },
