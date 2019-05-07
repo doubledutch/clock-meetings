@@ -29,6 +29,8 @@ import { openTab } from './utils'
 export default class Admin extends PureComponent {
   state = {
     users: {},
+    finalCTAText: '',
+    finalCTA: '',
   }
 
   componentDidMount() {
@@ -42,10 +44,10 @@ export default class Admin extends PureComponent {
       .on('value', data => this.setState({ requireIsHere: data.val() || false }))
     fbc.database.public
       .adminRef('finalCTAText')
-      .on('value', data => this.setState({ finalCTAText: data.val() }))
+      .on('value', data => this.setState({ finalCTAText: data.val() || '' }))
     fbc.database.public
       .adminRef('finalCTA')
-      .on('value', data => this.setState({ finalCTA: data.val() }))
+      .on('value', data => this.setState({ finalCTA: data.val() || '' }))
     mapPushedDataToStateObjects(fbc.database.public.usersRef(), this, 'users', key => {
       // Trigger lookup for attendee as a side-effect, which will delete their data if not found (deleted).
       this.getCachedUser(key)
