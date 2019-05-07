@@ -246,7 +246,7 @@ class Root extends PureComponent {
       if (!m) return null
       const a = attendeesWithTopics[m.a]
       const b = attendeesWithTopics[m.b]
-      const topic = (m.a === currentUser.id ? a && a.topic : b && b.topic) || topics[m.slotIndex]
+      const topic = (m.b === currentUser.id ? a && a.topic : b && b.topic) || topics[m.slotIndex]
       return topic
     }
 
