@@ -28,7 +28,7 @@ import { Avatar, Color } from '@doubledutch/rn-client'
 
 import Timer from './Timer'
 import { charcoalGray, fontFamily, bold } from './styles'
-import vr from './images/vr.png.js'
+import networkingGray from './images/networking-gray.png'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
@@ -49,7 +49,7 @@ const nameSize = user => {
     user.firstName ? user.firstName.length : 1,
     user.lastName ? user.lastName.length : 1,
   )
-  const fontSize = Math.min(270 / maxLength, 43)
+  const fontSize = Math.min(260 / maxLength, 43)
   return { fontSize }
 }
 
@@ -64,18 +64,18 @@ export default ({
 }) => {
   const currentMeetingUserId = meetings[meeting.roundIndex]
   if (!currentMeetingUserId) {
-    const height = Dimensions.get('window').height * 0.3
-    const vrSize = { height, width: height * (147 / 247) }
+    const height = Dimensions.get('window').height * 0.25
+    const networkingSize = { height, width: (height * 554) / 350 }
     return (
       <View style={s.outer}>
         <View style={s.breakDetail}>
-          <Text style={s.round}>Break time!</Text>
+          <Text style={s.round}>Whoops!</Text>
 
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
-          <Text style={s.instructions}>Take a break!</Text>
-          <Text style={s.instructions}>You have nothing scheduled this round.</Text>
+          <Text style={s.instructions}>Need someone to talk to?</Text>
+          <Text style={s.instructions}>Find your facilitator and ask them to help match you.</Text>
         </View>
-        <Image source={vr} style={[s.vr, vrSize]} />
+        <Image source={networkingGray} style={[s.networking, networkingSize]} />
       </View>
     )
   }
@@ -221,10 +221,10 @@ const s = StyleSheet.create({
     marginTop: 30,
     marginBottom: 40,
   },
-  vr: {
+  networking: {
     position: 'absolute',
     bottom: 15,
-    left: 35,
+    left: 15,
     zIndex: 1,
     resizeMode: 'contain',
   },
