@@ -69,7 +69,7 @@ export default ({
     return (
       <View style={s.outer}>
         <View style={s.breakDetail}>
-          <Text style={s.round}>Whoops!</Text>
+          <Text style={s.round}>Yikes!</Text>
 
           <Timer getTime={getServerTime} targetTime={meeting.endTime} style={s.timer} />
           <Text style={s.instructions}>Need someone to talk to?</Text>
