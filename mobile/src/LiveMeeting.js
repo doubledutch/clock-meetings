@@ -28,7 +28,7 @@ import { Avatar, Color } from '@doubledutch/rn-client'
 
 import Timer from './Timer'
 import { charcoalGray, fontFamily, bold } from './styles'
-import networkingGray from './images/networking-gray.png'
+import networkingGray from './images/networking-gray.png.js'
 
 const SafeAreaView = SAV || View // SafeAreaView added in React Native 0.50. Fall back to View.
 
