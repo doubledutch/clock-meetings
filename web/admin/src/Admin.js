@@ -77,6 +77,7 @@ export default class Admin extends PureComponent {
 
     return (
       <div className="admin vertical space-children">
+        <h1 className="pageTitle">Magic Hour</h1>
         <div>
           Host a fast networking opportunity for your attendees. Choose 3-12 slots that attendees
           can fill (e.g. &quot;Will you be my third slot?&quot;), and optionally assign a default
