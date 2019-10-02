@@ -30,6 +30,10 @@ body {
   padding: 10px;
 }
 
+.pageTitle {
+  font-weight: 400;
+}
+
 label {
   display: block;
 }
