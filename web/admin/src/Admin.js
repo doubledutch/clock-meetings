@@ -338,8 +338,8 @@ export default class Admin extends PureComponent {
         .getAttendees(email)
         .then(as => {
           if (!as.length) return null
-          const { firstName, lastName, title, company, image } = as[0]
-          return { firstName, lastName, title, company, image, topic }
+          const { firstName, lastName, title, company, image, id } = as[0]
+          return { firstName, lastName, title, company, image, topic, id }
         })
         .catch(() => null),
     )
