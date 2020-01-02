@@ -34,6 +34,7 @@ const Main = ({
   requireIsHere,
   saveTopic,
   slotCount,
+  topics,
   viewAttendeeDetails,
 }) => {
   const filledMeetings = meetings.filter(x => x)
@@ -41,6 +42,8 @@ const Main = ({
 
   const buddyOpener = attendee => () => viewAttendeeDetails(attendee)
   const setIsHere = () => fbc.database.public.userRef('isHere').set(true)
+
+  const suggestedTopic = getTopic(topics)
 
   return (
     <ScrollView style={s.container}>
@@ -51,52 +54,64 @@ const Main = ({
             {currentUser.firstName} {currentUser.lastName}
           </Text>
         </View>
-        <Text style={s.yourTopic}>Your Topic:</Text>
-        <Topic
-          attendeesWithTopics={attendeesWithTopics}
-          me={me}
-          primaryColor={primaryColor}
-          saveTopic={saveTopic}
-        />
-      </View>
-      <View style={s.slots}>
-        <View style={[s.row, s.youHaveContainer]}>
-          {openSlots ? (
-            <Text style={s.youHave}>
-              You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
+        {me.topic && (
+          <View>
+            <Text style={s.yourTopic}>Your Topic:</Text>
+            <Text style={s.yourTopic} numberOfLines={2}>
+              {me.topic}
             </Text>
-          ) : (
-            <Text style={s.youHave}>You have {slotCount} people to talk with!</Text>
-          )}
-          {requireIsHere && !me.isHere && (
-            <Button
-              secondary
-              text="I'm Here"
-              color={primaryColor}
-              style={s.imHere}
-              onPress={setIsHere}
-            />
-          )}
-        </View>
-        {filledMeetings.map(userId => {
-          const buddy = getCachedUser(userId)
-          const { topic } = attendeesWithTopics[userId] || {}
-          return (
-            <Meeting
-              key={userId}
-              buddy={buddy}
-              topic={topic}
-              numberOfLines={1}
-              onPress={buddyOpener({ ...buddy, topic })}
-            />
-          )
-        })}
-        {openSlots > 0 && (
-          <Link to="/select" style={s.add}>
-            <Button text="Add People +" color={primaryColor} secondary wrapper={View} />
-          </Link>
+          </View>
+        )}
+        {!me.topic && suggestedTopic && (
+          <Button
+            color={primaryColor}
+            text="Join Game"
+            style={s.editTopic}
+            textStyle={s.bold}
+            onPress={() => saveTopic({ topic: suggestedTopic })}
+          />
         )}
       </View>
+      {me.topic && (
+        <View style={s.slots}>
+          <View style={[s.row, s.youHaveContainer]}>
+            {openSlots ? (
+              <Text style={s.youHave}>
+                You have {openSlots} open slot{openSlots === 1 ? '' : 's'}
+              </Text>
+            ) : (
+              <Text style={s.youHave}>You have {slotCount} people to talk with!</Text>
+            )}
+            {requireIsHere && !me.isHere && (
+              <Button
+                secondary
+                text="I'm Here"
+                color={primaryColor}
+                style={s.imHere}
+                onPress={setIsHere}
+              />
+            )}
+          </View>
+          {filledMeetings.map(userId => {
+            const buddy = getCachedUser(userId)
+            const { topic } = attendeesWithTopics[userId] || {}
+            return (
+              <Meeting
+                key={userId}
+                buddy={buddy}
+                topic={topic}
+                numberOfLines={1}
+                onPress={buddyOpener({ ...buddy, topic })}
+              />
+            )
+          })}
+          {openSlots > 0 && (
+            <Link to="/select" style={s.add}>
+              <Button text="Add People +" color={primaryColor} secondary wrapper={View} />
+            </Link>
+          )}
+        </View>
+      )}
     </ScrollView>
   )
 }
@@ -146,6 +161,14 @@ class Topic extends PureComponent {
 }
 
 export default Main
+
+const getTopic = topics => {
+  if (topics) {
+    const newTopics = topics.slice(1)
+    return newTopics[Math.floor(Math.random() * newTopics.length)] || null
+  }
+  return null
+}
 
 const Meeting = ({ buddy, topic, numberOfLines, onPress }) => (
   <TouchableOpacity style={s.buddy} onPress={onPress}>
