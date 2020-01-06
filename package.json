@@ -1,6 +1,6 @@
 {
   "name": "magichour",
-  "version": "4.0.3",
+  "version": "0.0.4",
   "baseBundleVersion": "0.59.3",
   "private": true,
   "scripts": {
